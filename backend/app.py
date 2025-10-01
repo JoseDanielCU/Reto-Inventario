@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # Rutas
 from routes.auth_routes import login_user, register_user
 from routes.orders_routes import crear_pedido, pedidos_por_sucursal
-from routes.products_routes import crear_producto, listar_productos
+from routes.products_routes import crear_producto, listar_productos, actualizar_producto, eliminar_producto
 
 
 load_dotenv()
@@ -45,16 +45,25 @@ def crear_pedido_route():
 def pedidos_sucursal_route(sucursal_id):
     return pedidos_por_sucursal(sucursal_id)
 
-@app.route("/api/crear_productos", methods=["POST"])
+@app.route("/api/productos", methods=["POST"])
 @jwt_required()
 def crear_producto_route():
     data = request.get_json()
     return crear_producto(data)
 
-@app.route("/api/lista_productos", methods=["GET"])
+@app.route("/api/productos", methods=["GET"])
 @jwt_required()
 def listar_productos_route():
     return listar_productos()
+@app.route("/api/productos/<id>", methods=["PUT"])
+@jwt_required()
+def actualizar_producto_route(id):
+    data = request.get_json()
+    return actualizar_producto(id, data)
 
+@app.route("/api/productos/<id>", methods=["DELETE"])
+@jwt_required()
+def eliminar_producto_route(id):
+    return eliminar_producto(id)
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

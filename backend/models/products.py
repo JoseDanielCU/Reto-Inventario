@@ -1,3 +1,4 @@
+from bson import ObjectId
 from models.mongodb import mongo
 
 class ProductModel:
@@ -18,8 +19,19 @@ class ProductModel:
         producto["_id"] = result.inserted_id
         return producto
 
+
     @staticmethod
     def get_all(filters=None):
         if filters is None:
             filters = {}
         return list(mongo.db[ProductModel.collection].find(filters))
+    @staticmethod
+    def update_producto(id, data):
+        return mongo.db.productos.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": data}
+        )
+
+    @staticmethod
+    def delete_producto(id):
+        return mongo.db.productos.delete_one({"_id": ObjectId(id)})

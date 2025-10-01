@@ -15,7 +15,8 @@ def login_user(data):
     if bcrypt.check_password_hash(user["password"], password):
         # Crear token JWT
         access_token = create_access_token(
-            identity={"correo": correo, "role": user["rol"]},
+            identity=correo,
+            additional_claims={"role": user["rol"]},
             expires_delta=timedelta(hours=1)
         )
         return jsonify({
