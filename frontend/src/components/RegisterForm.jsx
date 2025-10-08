@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export function RegisterForm() {
@@ -6,8 +6,30 @@ export function RegisterForm() {
   const [correo, setCorreo] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [sucursalId, setSucursalId] = useState("");
+  const [sucursales, setSucursales] = useState([]);
   const [message, setMessage] = useState("");
 
+  // Cargar sucursales
+  useEffect(() => {
+    const fetchSucursales = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/sucursales");
+        const data = await res.json();
+        if (res.ok) {
+          setSucursales(Array.isArray(data) ? data : []);
+        } else {
+          console.error("Error al cargar sucursales:", data.msg);
+        }
+      } catch (err) {
+        console.error("Error al conectar con el servidor de sucursales");
+      }
+    };
+
+    fetchSucursales();
+  }, []);
+
+  // Manejar registro
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -15,12 +37,23 @@ export function RegisterForm() {
       const res = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, correo, username, password }),
+        body: JSON.stringify({
+          nombre,
+          correo,
+          username,
+          password,
+          sucursal_id: sucursalId,
+        }),
       });
 
       const data = await res.json();
       if (res.ok) {
         setMessage(`Registro exitoso, rol asignado: ${data.role}`);
+        setNombre("");
+        setCorreo("");
+        setUsername("");
+        setPassword("");
+        setSucursalId("");
       } else {
         setMessage(`Error: ${data.msg}`);
       }
@@ -41,8 +74,8 @@ export function RegisterForm() {
           Registro de Usuario
         </h2>
 
+        {/* Nombre */}
         <div className="mb-3">
-          <label htmlFor="nombre" className="form-label visually-hidden">Nombre completo</label>
           <input
             id="nombre"
             name="nombre"
@@ -56,8 +89,8 @@ export function RegisterForm() {
           />
         </div>
 
+        {/* Correo */}
         <div className="mb-3">
-          <label htmlFor="correo" className="form-label visually-hidden">Correo electrónico</label>
           <input
             id="correo"
             name="correo"
@@ -71,8 +104,8 @@ export function RegisterForm() {
           />
         </div>
 
+        {/* Username */}
         <div className="mb-3">
-          <label htmlFor="username" className="form-label visually-hidden">Usuario</label>
           <input
             id="username"
             name="username"
@@ -86,8 +119,8 @@ export function RegisterForm() {
           />
         </div>
 
+        {/* Contraseña */}
         <div className="mb-3">
-          <label htmlFor="new-password" className="form-label visually-hidden">Contraseña</label>
           <input
             id="new-password"
             name="password"
@@ -99,6 +132,23 @@ export function RegisterForm() {
             autoComplete="new-password"
             required
           />
+        </div>
+
+        {/* Selección de sucursal */}
+        <div className="mb-3">
+          <select
+            className="form-select"
+            value={sucursalId}
+            onChange={(e) => setSucursalId(e.target.value)}
+            required
+          >
+            <option value="">Selecciona una sucursal</option>
+            {sucursales.map((suc) => (
+              <option key={suc._id} value={suc._id}>
+                {suc.nombre}
+              </option>
+            ))}
+          </select>
         </div>
 
         <button

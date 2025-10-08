@@ -16,7 +16,10 @@ def login_user(data):
         # Crear token JWT
         access_token = create_access_token(
             identity=correo,
-            additional_claims={"role": user["rol"]},
+            additional_claims={
+                "rol": user["rol"],
+                "sucursal_id": user.get("sucursal_id")
+            },
             expires_delta=timedelta(hours=1)
         )
         return jsonify({
@@ -33,7 +36,7 @@ def register_user(data):
     correo = data.get("correo")
     password = data.get("password")
     rol = data.get("rol", "asesor")  # por defecto asesor
-    sucursal_id = data.get("sucursal_id")
+    sucursal_id = data.get("sucursal_id","1")
 
     # Validaciones mínimas
     if not correo or not password or not nombre:

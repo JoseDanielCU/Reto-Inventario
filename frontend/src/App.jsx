@@ -4,7 +4,7 @@ import AsesorDashboard from "./pages/AsesorDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import Cart from "./pages/Cart"
 function App() {
   return (
     <BrowserRouter>
@@ -21,6 +21,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+          <Route
+              path="/cart"
+              element={
+              <ProtectedRoute allowedRoles={["asesor"]}>
+              <Cart />
+              </ProtectedRoute>
+          }
+          />
+
         <Route
           path="/admin"
           element={

@@ -6,7 +6,7 @@ class OrdersModel:
     collection = "pedidos"
 
     @staticmethod
-    def create_pedido(data):
+    def create_order(data):
         pedido = {
             "asesor_id": data["asesor_id"],
             "sucursal_id": data["sucursal_id"],

@@ -1,5 +1,6 @@
 from models.mongodb import mongo, bcrypt
 
+
 class UserModel:
     collection = "users"
 

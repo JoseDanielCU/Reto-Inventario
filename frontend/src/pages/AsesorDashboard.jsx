@@ -2,15 +2,25 @@ import { useState, useEffect } from "react";
 
 export default function AsesorDashboard() {
   const [productos, setProductos] = useState([]);
-  const [categorias] = useState(["celular", "accesorio", "simcard"]);
-  const [marcas, setMarcas] = useState([]);
+  const [categorias] = useState(["Celulares", "Accesorio", "Simcard"]);
+  const [marcas, setMarcas] = useState(["Apple","Samsung","Xiaomi","Motorola","Huawei","VIVO",]);
   const [search, setSearch] = useState("");
   const [categoria, setCategoria] = useState("");
   const [codigo, setCodigo] = useState("");
   const [marca, setMarca] = useState("");
 
   // carrito
-  const [carrito, setCarrito] = useState([]);
+
+    const [carrito, setCarrito] = useState(() => {
+      const saved = localStorage.getItem("carrito");
+      return saved ? JSON.parse(saved) : [];
+    });
+
+    useEffect(() => {
+      localStorage.setItem("carrito", JSON.stringify(carrito));
+    }, [carrito]);
+
+    const [cantidades, setCantidades] = useState({});
 
   // info usuario
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -44,7 +54,7 @@ export default function AsesorDashboard() {
 
   const fetchMarcas = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/lista_productos", {
+      const res = await fetch("http://localhost:5000/api/productos", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
@@ -66,8 +76,27 @@ export default function AsesorDashboard() {
     fetchProductos();
   };
 
+    const handleCantidadChange = (id, value) => {
+    setCantidades({ ...cantidades, [id]: parseInt(value) || 1 });
+  };
+
   const addToCart = (producto) => {
-    setCarrito([...carrito, producto]);
+    const cantidad = cantidades[producto._id] || 1;
+
+    setCarrito((prev) => {
+      const existente = prev.find((item) => item._id === producto._id);
+      if (existente) {
+        return prev.map((item) =>
+          item._id === producto._id
+            ? { ...item, cantidad: item.cantidad + cantidad }
+            : item
+        );
+      } else {
+        return [...prev, { ...producto, cantidad }];
+      }
+    });
+
+    setCantidades({ ...cantidades, [producto._id]: 1 });
   };
 
   return (
@@ -99,7 +128,7 @@ export default function AsesorDashboard() {
             <ul className="navbar-nav ms-auto">
               {/* Carrito */}
               <li className="nav-item">
-                <a className="nav-link" href="/carrito">
+                <a className="nav-link" href="/cart">
                   Carrito ({carrito.length})
                 </a>
               </li>
@@ -203,12 +232,49 @@ export default function AsesorDashboard() {
                     Marca: {p.marca || "N/A"} <br />
                     Código: {p.codigo || "N/A"}
                   </p>
-                  <button
-                    className="btn btn-danger w-100"
-                    onClick={() => addToCart(p)}
-                  >
-                    Agregar al carrito
-                  </button>
+                  <div className="d-flex flex-column align-items-center mb-3">
+                  <div className="d-flex align-items-center justify-content-center">
+                    <button
+                      className="btn btn-outline-danger btn-sm me-2"
+                      onClick={() =>
+                        handleCantidadChange(
+                          p._id,
+                          Math.max(1, (cantidades[p._id] || 1) - 1)
+                        )
+                      }
+                    >
+                      −
+                    </button>
+
+                    <span
+                      style={{
+                        minWidth: "40px",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        fontSize: "1.1rem",
+                      }}
+                    >
+                      {cantidades[p._id] || 1}
+                    </span>
+
+                    <button
+                      className="btn btn-outline-danger btn-sm ms-2"
+                      onClick={() =>
+                        handleCantidadChange(p._id, (cantidades[p._id] || 1) + 1)
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  className="btn btn-danger w-100"
+                  onClick={() => addToCart(p)}
+                >
+                  Agregar al carrito
+                </button>
+
                 </div>
               </div>
             </div>
