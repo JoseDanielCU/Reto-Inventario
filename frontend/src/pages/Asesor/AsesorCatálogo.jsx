@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export default function AsesorDashboard() {
-  const [productos, setProductos] = useState([]);
+export default function AsesorCatalogo() {
+const [productos, setProductos] = useState([]);
   const [categorias] = useState(["Celulares", "Accesorio", "Simcard"]);
   const [marcas, setMarcas] = useState(["Apple","Samsung","Xiaomi","Motorola","Huawei","VIVO",]);
   const [search, setSearch] = useState("");
@@ -101,55 +101,6 @@ export default function AsesorDashboard() {
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      {/* NAVBAR */}
-      <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
-        <div className="container-fluid">
-          <a className="navbar-brand" href="#">
-            Catálogo
-          </a>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav me-auto">
-              <li className="nav-item">
-                <a className="nav-link active" href="#">
-                  Inicio
-                </a>
-              </li>
-            </ul>
-
-            <ul className="navbar-nav ms-auto">
-              {/* Carrito */}
-              <li className="nav-item">
-                <a className="nav-link" href="/cart">
-                  Carrito ({carrito.length})
-                </a>
-              </li>
-
-              {/* Usuario */}
-              {user?.correo && (
-                <li className="nav-item">
-                  <span className="nav-link">{user.correo}</span>
-                </li>
-              )}
-
-              {/* Logout */}
-              <li className="nav-item">
-                <button className="btn btn-light btn-sm ms-2" onClick={logout}>
-                  Cerrar sesión
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
 
       {/* CONTENIDO PRINCIPAL */}
       <div className="container-fluid py-4 flex-grow-1">

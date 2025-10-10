@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity, get_jwt
 
 def crear_producto():
     claims = get_jwt()
-    if claims.get("role") != "admin":
+    if claims.get("rol") != "admin":
         return jsonify({"msg": "Acceso denegado: solo administradores pueden crear productos"}), 403
 
     data = request.get_json()

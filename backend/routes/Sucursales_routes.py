@@ -1,4 +1,3 @@
-# routes/branches_routes.py
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt
 from models.Sucursales import SucursalesModel
@@ -35,3 +34,14 @@ def actualizar_sucursal(id):
 def listar_sucursales():
     sucursales = SucursalesModel.get_all()
     return jsonify(sucursales), 200
+
+def eliminar_sucursal(id):
+    claims = get_jwt()
+    if claims.get("rol") != "admin":
+        return jsonify({"msg": "No autorizado"}), 403
+
+    result = SucursalesModel.delete_sucursal(id)
+    if result.deleted_count > 0:
+        return jsonify({"msg": "Sucursal eliminada"}), 200
+    else:
+        return jsonify({"msg": "No se encontró la sucursal"}), 404

@@ -6,9 +6,9 @@ from models.mongodb import mongo, bcrypt
 from dotenv import load_dotenv
 # Rutas
 from routes.auth_routes import login_user, register_user
-from routes.orders_routes import crear_pedido, pedidos_por_sucursal
+from routes.orders_routes import crear_pedido, pedidos_por_sucursal, obtener_todos_los_pedidos
 from routes.products_routes import crear_producto, listar_productos, actualizar_producto, eliminar_producto
-from routes.Sucursales_routes import crear_sucursal, listar_sucursales, actualizar_sucursal
+from routes.Sucursales_routes import crear_sucursal, listar_sucursales, actualizar_sucursal, eliminar_sucursal
 
 load_dotenv()
 app = Flask(__name__)
@@ -37,7 +37,10 @@ def login():
 @jwt_required()
 def crear_pedido_route():
     return crear_pedido()
-
+@app.route("/api/pedidos", methods=["GET"])
+@jwt_required()
+def obtener_todos_los_pedidos_route():
+    return obtener_todos_los_pedidos()
 @app.route("/api/pedidos/sucursal/<sucursal_id>", methods=["GET"])
 @jwt_required()
 def pedidos_sucursal_route(sucursal_id):
@@ -74,5 +77,12 @@ def obtener_sucursal_route():
 @jwt_required()
 def actualizar_sucursal_route(id):
     return actualizar_sucursal(id)
+
+@app.route("/api/sucursales/<id>", methods=["DELETE"])
+@jwt_required()
+def eliminar_sucursal_route(id):
+    return eliminar_sucursal(id)
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
