@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 export default function PedidosAsesor() {
     const [pedidos, setPedidos] = useState([]);
     const [mensaje, setMensaje] = useState("");
+    const [search, setSearch] = useState("");
+    const [estadoFiltro, setEstadoFiltro] = useState("");
+    const [fechaInicio, setFechaInicio] = useState("");
+    const [fechaFin, setFechaFin] = useState("");
 
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -31,10 +35,107 @@ export default function PedidosAsesor() {
                 setMensaje("No se pudo conectar con el servidor.");
             });
     }, [token, sucursalId]);
+    const pedidosFiltrados = pedidos.filter((p) => {
+        const texto = search.toLowerCase();
+
+        // Filtro por texto
+        const coincideTexto =
+            p._id?.toLowerCase().includes(texto) ||
+            p.estado?.toLowerCase().includes(texto) ||
+            p.productos?.some((prod) =>
+                prod.nombre.toLowerCase().includes(texto)
+            );
+
+        // Filtro por estado
+        const coincideEstado =
+            estadoFiltro === "" || p.estado === estadoFiltro;
+
+        // Fechas
+        const fechaPedido = new Date(p.fecha_creacion);
+        const desde = fechaInicio ? new Date(fechaInicio) : null;
+        const hasta = fechaFin ? new Date(fechaFin) : null;
+
+        const coincideFecha =
+            (!desde || fechaPedido >= desde) &&
+            (!hasta || fechaPedido <= hasta);
+
+        return coincideTexto && coincideEstado && coincideFecha;
+    });
 
     return (
         <div className="container mt-4">
             <h2 className="text-danger mb-4">Pedidos de mi Sucursal</h2>
+                {/* FILTROS */}
+                <div className="card p-3 mb-4 shadow-sm">
+
+                    <div className="row g-3">
+
+                        {/* BUSCADOR */}
+                        <div className="col-md-4">
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Buscar por ID, estado o producto…"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+
+                        {/* ESTADO */}
+                        <div className="col-md-3">
+                            <select
+                                className="form-select"
+                                value={estadoFiltro}
+                                onChange={(e) => setEstadoFiltro(e.target.value)}
+                            >
+                                <option value="">Todos los estados</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="aprobado">Aprobado</option>
+                                <option value="enviado">Enviado</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+
+                        {/* LIMPIAR */}
+                        <div className="col-md-2">
+                            <button
+                                className="btn btn-secondary w-100"
+                                onClick={() => {
+                                    setSearch("");
+                                    setEstadoFiltro("");
+                                    setFechaInicio("");
+                                    setFechaFin("");
+                                }}
+                            >
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* FILTRO DE FECHAS */}
+                    <div className="row g-3 mt-1">
+                        <div className="col-md-3">
+                            <label className="form-label">Desde</label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={fechaInicio}
+                                onChange={(e) => setFechaInicio(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="col-md-3">
+                            <label className="form-label">Hasta</label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={fechaFin}
+                                onChange={(e) => setFechaFin(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                </div>
 
             {mensaje && <div className="alert alert-info">{mensaje}</div>}
 
@@ -42,7 +143,7 @@ export default function PedidosAsesor() {
                 <p>No hay pedidos registrados en esta sucursal.</p>
             ) : (
                 <div className="accordion" id="accordionAsesor">
-                    {pedidos.map((pedido, index) => (
+                    {pedidosFiltrados.map((pedido, index) => (
                         <div className="accordion-item" key={pedido._id}>
                             <h2 className="accordion-header" id={`heading${index}`}>
                                 <button
@@ -111,8 +212,14 @@ export default function PedidosAsesor() {
                                         <ul>
                                             {pedido.historial?.map((h, i) => (
                                                 <li key={i}>
-                                                    {h.estado} –{" "}
+                                                    <strong>{h.estado.toUpperCase()}</strong> –{" "}
                                                     {new Date(h.fecha).toLocaleString()}
+
+                                                    {h.motivo && (
+                                                        <div className="text-danger ms-3">
+                                                            <strong>Motivo:</strong> {h.motivo}
+                                                        </div>
+                                                    )}
                                                 </li>
                                             ))}
                                         </ul>

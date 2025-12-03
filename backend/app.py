@@ -6,7 +6,7 @@ from models.mongodb import mongo, bcrypt
 from dotenv import load_dotenv
 # Rutas
 from routes.auth_routes import login_user, register_user
-from routes.orders_routes import crear_pedido, pedidos_por_sucursal, obtener_todos_los_pedidos
+from routes.orders_routes import crear_pedido, pedidos_por_sucursal, obtener_todos_los_pedidos, aprobar_pedido, cambiar_estado_pedido,actualizar_cantidades
 from routes.products_routes import crear_producto, listar_productos, actualizar_producto, eliminar_producto, listar_categorias
 from routes.Sucursales_routes import crear_sucursal, listar_sucursales, actualizar_sucursal, eliminar_sucursal
 
@@ -15,7 +15,18 @@ app = Flask(__name__)
 app.config.from_object(config)
 
 # Extensiones
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {
+    "origins": "*",
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Authorization", "Content-Type"],
+}})
+@app.after_request
+def apply_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    return response
+
 mongo.init_app(app)
 bcrypt.init_app(app)
 JWTManager(app)
@@ -85,6 +96,28 @@ def eliminar_sucursal_route(id):
 @app.route("/api/categorias",methods=["GET"])
 def listar_categorias_route():
     return listar_categorias()
+@app.route("/api/pedidos/<id>/aprobar", methods=["PUT"])
+@jwt_required()
+def aprobar_pedido_route(id):
+    return aprobar_pedido(id)
+
+@app.route("/api/pedidos/<id>/actualizar-cantidades", methods=["PUT"])
+@jwt_required()
+def actualizar_cantidades_route(id):
+    return actualizar_cantidades(id)
+
+@app.route("/api/pedidos/<id>/enviar", methods=["PUT"])
+@jwt_required()
+def enviar_pedido_route(id):
+    return cambiar_estado_pedido(id, "enviado")
+
+
+@app.route("/api/pedidos/<id>/cancelar", methods=["PUT"])
+@jwt_required()
+def cancelar_pedido_route(id):
+    data = request.get_json()
+    motivo = data.get("motivo", "Sin especificar")
+    return cambiar_estado_pedido(id, "cancelado", motivo)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

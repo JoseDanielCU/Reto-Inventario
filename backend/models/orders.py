@@ -9,7 +9,7 @@ class OrdersModel:
     def create_order(data):
         pedido = {
             "asesor_id": data["asesor_id"],
-            "sucursal_id": data["sucursal_id"],
+            "sucursal_id": str(data["sucursal_id"]),
             "productos": data["productos"],  # lista de {producto_id, cantidad}
             "estado": "pendiente",
             "historial": [
@@ -39,17 +39,70 @@ class OrdersModel:
 
     @staticmethod
     def _get_sucursal_nombre(sucursal_id):
-        if not sucursal_id:
-            return "Desconocida"
-        sucursal = None
+        sucursal_id = str(sucursal_id)
+
         try:
             sucursal = mongo.db["Sucursales"].find_one({"_id": ObjectId(sucursal_id)})
         except bson_errors.InvalidId:
-            sucursal = mongo.db["Sucursales"].find_one({"_id": sucursal_id}) or \
-                       mongo.db["Sucursales"].find_one({"nombre": sucursal_id})
+            sucursal = mongo.db["Sucursales"].find_one({"_id": sucursal_id})
 
         if sucursal:
             return sucursal.get("nombre", "Desconocida")
 
         return f"ID: {sucursal_id}"
+
+    @staticmethod
+    def update_status(pedido_id, nuevo_estado, motivo=None):
+        pedido = mongo.db.pedidos.find_one({"_id": ObjectId(pedido_id)})
+
+        if not pedido:
+            return False
+
+        historial_entry = {
+            "estado": nuevo_estado,
+            "fecha": datetime.utcnow()
+        }
+
+        if motivo:
+            historial_entry["motivo"] = motivo
+
+        result = mongo.db.pedidos.update_one(
+            {"_id": ObjectId(pedido_id)},
+            {
+                "$set": {
+                    "estado": nuevo_estado
+                },
+                "$push": {
+                    "historial": historial_entry
+                }
+            }
+        )
+
+        return result.modified_count > 0
+
+    @staticmethod
+    def approve_order(pedido_id, productos_aprobados):
+        try:
+            pedido_oid = ObjectId(pedido_id)
+        except:
+            return False
+
+        result = mongo.db[OrdersModel.collection].update_one(
+            {"_id": pedido_oid},
+            {
+                "$set": {
+                    "productos": productos_aprobados,
+                    "estado": "aprobado"
+                },
+                "$push": {
+                    "historial": {
+                        "estado": "aprobado",
+                        "fecha": datetime.utcnow()
+                    }
+                }
+            }
+        )
+
+        print("Modified count:", result.modified_count)
+        return result.modified_count == 1
 
