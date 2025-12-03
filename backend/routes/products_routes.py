@@ -44,7 +44,7 @@ def listar_productos():
 
 def actualizar_producto(id):
     claims = get_jwt()
-    if claims.get("role") != "admin":
+    if claims.get("rol") != "admin":
         return jsonify({"msg": "Acceso denegado"}), 403
 
     data = request.get_json()
@@ -59,7 +59,7 @@ def actualizar_producto(id):
 
 def eliminar_producto(id):
     claims = get_jwt()
-    if claims.get("role") != "admin":
+    if claims.get("rol") != "admin":
         return jsonify({"msg": "Acceso denegado"}), 403
 
     result = ProductModel.delete_producto(id)
@@ -67,3 +67,10 @@ def eliminar_producto(id):
         return jsonify({"msg": "Producto eliminado"}), 200
     else:
         return jsonify({"msg": "Producto no encontrado"}), 404
+
+def listar_categorias():
+    try:
+        categorias = ProductModel.get_distinct_categories()
+        return jsonify(categorias), 200
+    except Exception as e:
+        return jsonify({"msg": "Error al obtener categorías", "error": str(e)}), 500

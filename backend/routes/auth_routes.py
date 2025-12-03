@@ -32,8 +32,10 @@ def login_user(data):
         return jsonify({
             "msg": "Login exitoso",
             "role": user["rol"],
-            "token": access_token
+            "token": access_token,
+            "sucursal_id": user.get("sucursal_id")
         }), 200
+
     else:
         return jsonify({"msg": "Credenciales inválidas"}), 401
 

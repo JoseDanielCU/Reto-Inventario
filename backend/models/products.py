@@ -35,3 +35,7 @@ class ProductModel:
     @staticmethod
     def delete_producto(id):
         return mongo.db.productos.delete_one({"_id": ObjectId(id)})
+
+    @staticmethod
+    def get_distinct_categories():
+        return mongo.db[ProductModel.collection].distinct("categoria")

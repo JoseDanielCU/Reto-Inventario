@@ -60,7 +60,7 @@ export default function AdminPedidos() {
               >
                 <div className="accordion-body">
                   <p><strong>Asesor:</strong> {pedido.asesor_id}</p>
-                  <p><strong>Sucursal:</strong> {pedido.sucursal_id}</p>
+                    <p><strong>Sucursal:</strong> {pedido.sucursal_nombre}</p>
 
                   <h5 className="mt-3">Productos en el pedido:</h5>
                   <div className="table-responsive">

@@ -10,6 +10,8 @@ import AdminProductos from "./pages/Admin/AdminProductos";
 import AdminSucursales from "./pages/Admin/AdminSucursales";
 import AdminPedidos from "./pages/Admin/AdminPedidos";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PedidosAsesor from "./pages/Asesor/AsesorPedidos.jsx";
+import AsesorPedidos from "./pages/Asesor/AsesorPedidos.jsx";
 
 
 function App() {
@@ -24,6 +26,7 @@ function App() {
         <Route path="/asesor" element={<ProtectedRoute allowedRoles={["asesor"]}><AsesorDashboard /></ProtectedRoute>}
         >
              <Route path="catalogo" element={<AsesorCatalogo/>}/>
+            <Route path="pedidos" element={<AsesorPedidos/>}/>
         </Route>
         <Route path="/cart" element={<ProtectedRoute allowedRoles={["asesor"]}><Cart /></ProtectedRoute>}
         />

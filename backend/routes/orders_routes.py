@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity, get_jwt
 from models.orders import OrdersModel
+from models.Sucursales import SucursalesModel
 from datetime import datetime
 from bson import ObjectId
 
@@ -8,10 +9,20 @@ from bson import ObjectId
 def serialize_pedido(p):
     p["_id"] = str(p["_id"])
     p["fecha_creacion"] = p.get("fecha_creacion", datetime.utcnow()).isoformat()
+
+    # ➤ Buscar sucursal
+    sucursal = SucursalesModel.get_by_id(p["sucursal_id"])
+    if sucursal:
+        p["sucursal_nombre"] = sucursal["nombre"]
+    else:
+        p["sucursal_nombre"] = "Sucursal desconocida"
+
+    # Historial fechas
     if "historial" in p:
         for h in p["historial"]:
             if isinstance(h.get("fecha"), datetime):
                 h["fecha"] = h["fecha"].isoformat()
+
     return p
 
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import NavbarAsesor from "../../components/Asesor/NavbarAsesor";
 
 export default function Carrito() {
   const [carrito, setCarrito] = useState(() => {
@@ -43,7 +44,7 @@ export default function Carrito() {
       });
 
       if (res.ok) {
-        alert("Pedido enviado correctamente 🎉");
+        alert("Pedido enviado correctamente");
         vaciarCarrito();
       } else {
         const err = await res.json();
@@ -55,7 +56,14 @@ export default function Carrito() {
   };
 
   return (
-    <div className="container py-4">
+     <div className="d-flex flex-column min-vh-100">
+
+    <NavbarAsesor
+      carritoCount={carrito.reduce((sum, item) => sum + item.cantidad, 0)}
+      user={JSON.parse(localStorage.getItem("user") || "{}")}
+    />
+
+    <div className="container py-4 flex-grow-1">
       <h2 className="text-danger mb-4">🛒 Carrito de Compras</h2>
 
       {carrito.length === 0 ? (
@@ -116,5 +124,6 @@ export default function Carrito() {
         </>
       )}
     </div>
-  );
+  </div>
+);
 }

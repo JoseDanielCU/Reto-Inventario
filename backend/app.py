@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # Rutas
 from routes.auth_routes import login_user, register_user
 from routes.orders_routes import crear_pedido, pedidos_por_sucursal, obtener_todos_los_pedidos
-from routes.products_routes import crear_producto, listar_productos, actualizar_producto, eliminar_producto
+from routes.products_routes import crear_producto, listar_productos, actualizar_producto, eliminar_producto, listar_categorias
 from routes.Sucursales_routes import crear_sucursal, listar_sucursales, actualizar_sucursal, eliminar_sucursal
 
 load_dotenv()
@@ -82,7 +82,9 @@ def actualizar_sucursal_route(id):
 @jwt_required()
 def eliminar_sucursal_route(id):
     return eliminar_sucursal(id)
-
+@app.route("/api/categorias",methods=["GET"])
+def listar_categorias_route():
+    return listar_categorias()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
