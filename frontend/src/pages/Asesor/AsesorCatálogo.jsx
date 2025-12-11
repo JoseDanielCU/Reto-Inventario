@@ -171,14 +171,14 @@ const [productos, setProductos] = useState([]);
             <div key={p._id} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
               <div className="card h-100 shadow-sm">
                 <img
-                  src={p.imagen || "https://via.placeholder.com/150"}
+                  src={p.imagen || "https://placehold.co/200"}
                   className="card-img-top"
-                  alt={p.nombre}
+                  style={{ height: "200px", objectFit: "cover" }}
+                  alt={p.referencia}
                 />
                 <div className="card-body">
-                  <h5 className="card-title">{p.nombre}</h5>
+                  <h5 className="card-title">{p.referencia}</h5>
                   <p className="card-text">
-                    Modelo: {p.modelo || "N/A"} <br />
                     Categoría: {p.categoria} <br />
                     Marca: {p.marca || "N/A"} <br />
                     Código: {p.codigo || "N/A"}

@@ -81,7 +81,7 @@ class OrdersModel:
         return result.modified_count > 0
 
     @staticmethod
-    def approve_order(pedido_id, productos_aprobados):
+    def approve_order(pedido_id, productos_aprobados, motivo=None):
         try:
             pedido_oid = ObjectId(pedido_id)
         except:
@@ -97,12 +97,14 @@ class OrdersModel:
                 "$push": {
                     "historial": {
                         "estado": "aprobado",
+                        "motivo": motivo,
                         "fecha": datetime.utcnow()
                     }
                 }
             }
         )
 
-        print("Modified count:", result.modified_count)
         return result.modified_count == 1
+
+
 

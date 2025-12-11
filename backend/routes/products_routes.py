@@ -14,6 +14,9 @@ def crear_producto():
 
 
 def listar_productos():
+    claims = get_jwt()
+    rol = claims.get("rol")
+    activo = request.args.get("activo")
 
     categoria = request.args.get("categoria")
     marca = request.args.get("marca")
@@ -21,6 +24,12 @@ def listar_productos():
     codigo = request.args.get("codigo")
 
     query = {}
+
+    # Si NO es admin, solo mostrar activos
+    if rol == "admin" and activo is not None:
+        query["activo"] = True if activo == "true" else False
+    elif rol != "admin":
+        query["activo"] = True
     if categoria:
         query["categoria"] = categoria
     if marca:
@@ -29,18 +38,19 @@ def listar_productos():
         query["codigo"] = {"$regex": codigo, "$options": "i"}
     if search:
         query["$or"] = [
-            {"nombre": {"$regex": search, "$options": "i"}},
-            {"modelo": {"$regex": search, "$options": "i"}},
+            {"referencia": {"$regex": search, "$options": "i"}},
             {"categoria": {"$regex": search, "$options": "i"}},
             {"codigo": {"$regex": search, "$options": "i"}},
             {"marca": {"$regex": search, "$options": "i"}}
         ]
 
     productos = ProductModel.get_all(query)
+
     for p in productos:
         p["_id"] = str(p["_id"])
 
     return jsonify(productos), 200
+
 
 def actualizar_producto(id):
     claims = get_jwt()
@@ -74,3 +84,24 @@ def listar_categorias():
         return jsonify(categorias), 200
     except Exception as e:
         return jsonify({"msg": "Error al obtener categorías", "error": str(e)}), 500
+def cambiar_estado_producto(id):
+    claims = get_jwt()
+    if claims.get("rol") != "admin":
+        return jsonify({"msg": "Acceso denegado"}), 403
+
+    data = request.get_json()
+    estado = data.get("activo")
+
+    if estado is None:
+        return jsonify({"msg": "Falta el campo 'activo'"}), 400
+
+    if isinstance(estado, str):
+        estado = estado.lower() == "true"
+
+    result = ProductModel.set_activo(id, estado)
+
+    if result.modified_count > 0:
+        return jsonify({"msg": "Estado actualizado"}), 200
+    else:
+        return jsonify({"msg": "No se encontró el producto o no hubo cambios"}), 404
+

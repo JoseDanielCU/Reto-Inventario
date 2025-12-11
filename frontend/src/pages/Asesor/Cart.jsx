@@ -84,7 +84,7 @@ export default function Carrito() {
             <tbody>
               {carrito.map((item) => (
                 <tr key={item._id}>
-                  <td>{item.nombre}</td>
+                  <td>{item.referencia}</td>
                   <td>{item.marca}</td>
                   <td>{item.categoria}</td>
                   <td>{item.codigo}</td>

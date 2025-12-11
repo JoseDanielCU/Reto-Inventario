@@ -43,7 +43,7 @@ export default function PedidosAsesor() {
             p._id?.toLowerCase().includes(texto) ||
             p.estado?.toLowerCase().includes(texto) ||
             p.productos?.some((prod) =>
-                prod.nombre.toLowerCase().includes(texto)
+                prod.referencia.toLowerCase().includes(texto)
             );
 
         // Filtro por estado
@@ -175,24 +175,28 @@ export default function PedidosAsesor() {
                                         <table className="table table-striped table-bordered mt-2">
                                             <thead>
                                                 <tr>
-                                                    <th>Nombre</th>
-                                                    <th>Modelo</th>
+                                                    <th>Referencia</th>
                                                     <th>Categoría</th>
                                                     <th>Código</th>
                                                     <th>Marca</th>
-                                                    <th>Cantidad</th>
+                                                    <th>Pedida</th>
+                                                    <th>Modificada</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {pedido.productos?.length > 0 ? (
                                                     pedido.productos.map((prod, i) => (
                                                         <tr key={i}>
-                                                            <td>{prod.nombre}</td>
-                                                            <td>{prod.modelo}</td>
+                                                            <td>{prod.referencia}</td>
                                                             <td>{prod.categoria}</td>
                                                             <td>{prod.codigo}</td>
                                                             <td>{prod.marca}</td>
+
+                                                            {/* CANTIDAD ORIGINAL */}
                                                             <td>{prod.cantidad}</td>
+
+                                                            {/* CANTIDAD AJUSTADA POR ADMIN */}
+                                                            <td>{prod.cantidad_modificada}</td>
                                                         </tr>
                                                     ))
                                                 ) : (
@@ -203,28 +207,46 @@ export default function PedidosAsesor() {
                                                     </tr>
                                                 )}
                                             </tbody>
+
                                         </table>
                                     </div>
 
                                     {/* Historial */}
-                                    <div className="mt-3">
-                                        <h6>Historial de estados:</h6>
+                                        <div className="mt-3">
+                                        <h6>Historial:</h6>
                                         <ul>
                                             {pedido.historial?.map((h, i) => (
-                                                <li key={i}>
-                                                    <strong>{h.estado.toUpperCase()}</strong> –{" "}
-                                                    {new Date(h.fecha).toLocaleString()}
+                                                <li key={i} className="mb-2">
 
-                                                    {h.motivo && (
-                                                        <div className="text-danger ms-3">
-                                                            <strong>Motivo:</strong> {h.motivo}
+                                                    {/* CAMBIO DE ESTADO */}
+                                                    {h.estado && (
+                                                        <>
+                                                            <strong>Cambio de estado:</strong> {h.estado.toUpperCase()} –{" "}
+                                                            {new Date(h.fecha).toLocaleString()}
+                                                            {h.motivo && (
+                                                                <div className="text-danger ms-3">
+                                                                    <strong>Motivo:</strong> {h.motivo}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+
+                                                    {/* CAMBIO DE CANTIDAD */}
+                                                    {h.accion === "modificacion_cantidad" && (
+                                                        <div>
+                                                            <strong>Modificación de cantidad:</strong> {h.producto_referencia}
+                                                            <br />
+                                                            Cantidad antes: <strong>{h.cantidad_antes}</strong>
+                                                            <br />
+                                                            Cantidad después: <strong>{h.cantidad_despues}</strong>
+                                                            <br />
+                                                            Fecha: {new Date(h.fecha).toLocaleString()}
                                                         </div>
                                                     )}
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
-
                                 </div>
                             </div>
                         </div>

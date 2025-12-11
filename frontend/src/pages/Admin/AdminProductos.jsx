@@ -9,9 +9,9 @@ export default function AdminProductos() {
     const [filtroCodigo, setFiltroCodigo] = useState("");
     const [filtroMarca, setFiltroMarca] = useState("");
     const [marcas, setMarcas] = useState([]);
+    const [mostrarInactivos, setMostrarInactivos] = useState(false);
   const [formData, setFormData] = useState({
-    nombre: "",
-    modelo: "",
+    referencia: "",
     categoria: "",
     nuevaCategoria: "",
     codigo: "",
@@ -30,6 +30,7 @@ export default function AdminProductos() {
     if (filtroCategoria) params.append("categoria", filtroCategoria);
     if (filtroCodigo) params.append("codigo", filtroCodigo);
     if (filtroMarca) params.append("marca", filtroMarca);
+    if (mostrarInactivos) params.append("activo", "false");
 
     const res = await fetch(
       `http://localhost:5000/api/productos?${params.toString()}`,
@@ -110,8 +111,7 @@ const fetchMarcas = async () => {
     if (res.ok) {
       setMensaje(editando ? "Producto actualizado" : "Producto creado");
       setFormData({
-        nombre: "",
-        modelo: "",
+        referencia: "",
         categoria: "",
         nuevaCategoria: "",
         codigo: "",
@@ -150,8 +150,31 @@ const fetchMarcas = async () => {
       document.addEventListener("click", handleClickOutside);
       return () => document.removeEventListener("click", handleClickOutside);
     }, []);
+  const toggleActivo = async (id, estadoActual) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/productos/${id}/estado`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ activo: !estadoActual }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert("Error al actualizar estado: " + data.msg);
+        return;
+      }
+
+      fetchProductos(); // recargar lista
+    } catch (err) {
+      console.error("Error al cambiar estado", err);
+    }
+  };
 
   return (
+
     <div>
       <h2 className="mb-4 text-danger">
         {editando ? "Editar Producto" : "Crear Producto"}
@@ -163,23 +186,12 @@ const fetchMarcas = async () => {
           <div className="col-md-6 mb-2">
             <input
               type="text"
-              name="nombre"
-              placeholder="Nombre"
+              name="referencia"
+              placeholder="Referencia"
               className="form-control"
-              value={formData.nombre}
+              value={formData.referencia}
               onChange={handleChange}
               required
-            />
-          </div>
-
-          <div className="col-md-6 mb-2">
-            <input
-              type="text"
-              name="modelo"
-              placeholder="Modelo"
-              className="form-control"
-              value={formData.modelo}
-              onChange={handleChange}
             />
           </div>
 
@@ -328,8 +340,7 @@ const fetchMarcas = async () => {
             className="btn btn-secondary ms-2 mt-2"
             onClick={() => {
               setFormData({
-                nombre: "",
-                modelo: "",
+                referencia: "",
                 categoria: "",
                 nuevaCategoria: "",
                 codigo: "",
@@ -401,6 +412,20 @@ const fetchMarcas = async () => {
               ))}
             </select>
           </div>
+<div className="col-12 col-md-2 d-flex align-items-center">
+  <div className="form-check">
+    <input
+      className="form-check-input"
+      type="checkbox"
+      id="mostrarInactivos"
+      checked={mostrarInactivos}
+      onChange={(e) => setMostrarInactivos(e.target.checked)}
+    />
+    <label className="form-check-label" htmlFor="mostrarInactivos">
+      Mostrar inactivos
+    </label>
+  </div>
+</div>
 
           <div className="col-6 col-md-2">
             <button type="submit" className="btn btn-danger w-100">
@@ -417,33 +442,50 @@ const fetchMarcas = async () => {
             <div className="card shadow-sm">
               {p.imagen && (
                 <img
-                  src={p.imagen}
+                  src={p.imagen || "https://placehold.co/200"}
                   className="card-img-top"
                   style={{ height: "200px", objectFit: "cover" }}
+                  alt={p.referencia}
                 />
               )}
               <div className="card-body">
-                <h5 className="card-title">{p.nombre}</h5>
+                <h5 className="card-title">{p.referencia}</h5>
                 <p className="card-text">{p.descripcion}</p>
                 <p className="card-text">
-                    Modelo: {p.modelo || "N/A"} <br />
                     Categoría: {p.categoria} <br />
                     Marca: {p.marca || "N/A"} <br />
                     Código: {p.codigo || "N/A"}
                   </p>
+                <div className="d-flex gap-2 mt-2">
+
+                {/* EDITAR */}
                 <button
-                  className="btn btn-warning btn-sm me-2"
+                  className="btn btn-outline-primary btn-sm"
                   onClick={() => handleEdit(p)}
                 >
-                  Editar
+                  <i className="bi bi-pencil-square"></i> Editar
                 </button>
 
+                {/* ELIMINAR */}
                 <button
-                  className="btn btn-danger btn-sm"
+                  className="btn btn-outline-danger btn-sm"
                   onClick={() => handleDelete(p._id)}
                 >
-                  Eliminar
+                  <i className="bi bi-trash"></i> Eliminar
                 </button>
+
+                {/* ACTIVO / INACTIVO */}
+                <button
+                  className={`btn btn-sm ${p.activo ? "btn-success" : "btn-secondary"}`}
+                  onClick={() => toggleActivo(p._id, p.activo)}
+                >
+                  <i className={`bi ${p.activo ? "bi-check-circle" : "bi-x-circle"}`}></i>
+                  {" "}
+                  {p.activo ? "Activo" : "Inactivo"}
+                </button>
+
+              </div>
+
               </div>
             </div>
           </div>

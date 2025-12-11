@@ -3,13 +3,17 @@ import { useEffect, useState } from "react";
 export default function AdminPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [mensaje, setMensaje] = useState("");
-  const [pedidoEditando, setPedidoEditando] = useState(null);
+  const [pedidoEditado, setPedidoEditado] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
-  const [pedidoCancelando, setPedidoCancelando] = useState(null);
+  const [pedidoCancelado, setPedidoCancelado] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [filterEstado, setFilterEstado] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
+  const [ApproveReason, setApproveReason] = useState("");
+  const [pedidoAprobado, setPedidoAprobado] = useState(null);
+  const [SendReason, setSendReason] = useState("");
+  const [pedidoEnviado, setPedidoEnviado] = useState(null);
 
   const fetchPedidos = async () => {
     try {
@@ -31,14 +35,16 @@ export default function AdminPedidos() {
   }, []);
 
   const modificarCantidad = (pedidoId, idx, nuevaCantidad) => {
-    setPedidos((prev) =>
-      prev.map((p) =>
+    setPedidos(prev =>
+      prev.map(p =>
         p._id === pedidoId
           ? {
               ...p,
               productos: p.productos.map((prod, i) =>
-                i === idx ? { ...prod, cantidad: nuevaCantidad } : prod
-              ),
+                i === idx
+                  ? { ...prod, cantidad_modificada: nuevaCantidad }
+                  : prod
+              )
             }
           : p
       )
@@ -46,32 +52,46 @@ export default function AdminPedidos() {
   };
 
   const guardarAprobacion = async (pedido) => {
-    const res = await fetch(`http://localhost:5000/api/pedidos/${pedido._id}/aprobar`, {
+    const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoAprobado}/aprobar`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ productos: pedido.productos }),
+      body: JSON.stringify({
+        productos: pedido.productos,
+        motivo: ApproveReason,
+      }),
     });
 
     if (res.ok) {
       setMensaje("Pedido aprobado y actualizado");
-      setPedidoEditando(null);
+      setPedidoAprobado(null);
+      setApproveReason("");
       fetchPedidos();
     } else {
       setMensaje("Error al aprobar pedido");
     }
   };
 
-  const marcarEnviado = async (id) => {
-    const res = await fetch(`http://localhost:5000/api/pedidos/${id}/enviar`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
+  const marcarEnviado = async () => {
+    const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoEnviado}/enviar`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({
+      motivo: SendReason
+    }),
+  });
+
+
 
     if (res.ok) {
       setMensaje("Pedido marcado como enviado");
+      setPedidoEnviado(null)
+      setSendReason("");
       fetchPedidos();
     } else {
       setMensaje("Error al marcar como enviado");
@@ -79,7 +99,7 @@ export default function AdminPedidos() {
   };
 
   const cancelarPedido = async () => {
-    const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoCancelando}/cancelar`, {
+    const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoCancelado}/cancelar`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -90,7 +110,7 @@ export default function AdminPedidos() {
 
     if (res.ok) {
       setMensaje("Pedido cancelado correctamente");
-      setPedidoCancelando(null);
+      setPedidoCancelado(null);
       setCancelReason("");
       fetchPedidos();
     } else {
@@ -109,7 +129,7 @@ export default function AdminPedidos() {
 
       if (res.ok) {
         setMensaje("Cantidades actualizadas correctamente");
-        setPedidoEditando(null);
+        setPedidoEditado(null);
         fetchPedidos();
       } else {
         setMensaje("Error al actualizar cantidades");
@@ -252,28 +272,32 @@ export default function AdminPedidos() {
                   <table className="table table-striped table-bordered mt-2">
                     <thead>
                       <tr>
-                        <th>Nombre</th>
-                        <th>Modelo</th>
+                        <th>Referencia</th>
                         <th>Categoría</th>
                         <th>Código</th>
                         <th>Marca</th>
                         <th>Cantidad</th>
+                        <th>Cantidad a Enviar</th>
                       </tr>
                     </thead>
                     <tbody>
                       {pedido.productos.map((p, i) => (
                         <tr key={i}>
-                          <td>{p.nombre}</td>
-                          <td>{p.modelo}</td>
+                          <td>{p.referencia}</td>
                           <td>{p.categoria}</td>
                           <td>{p.codigo}</td>
                           <td>{p.marca}</td>
+
+                          {/* Cantidad pedida original */}
+                          <td>{p.cantidad}</td>
+
+                          {/* Cantidad modificada */}
                           <td>
-                            {pedidoEditando === pedido._id ? (
+                            {pedidoEditado === pedido._id ? (
                               <input
                                 type="number"
                                 className="form-control"
-                                value={p.cantidad}
+                                value={p.cantidad_modificada}
                                 min="1"
                                 onChange={(e) =>
                                   modificarCantidad(pedido._id, i, Number(e.target.value))
@@ -281,7 +305,7 @@ export default function AdminPedidos() {
                                 style={{ width: "80px" }}
                               />
                             ) : (
-                              p.cantidad
+                              p.cantidad_modificada
                             )}
                           </td>
                         </tr>
@@ -291,9 +315,9 @@ export default function AdminPedidos() {
 
                   {pedido.estado === "pendiente" && (
                       <div className="mt-3">
-                        {pedidoEditando === pedido._id ? (
+                        {pedidoEditado === pedido._id ? (
                           <>
-                            <button
+                           <button
                               className="btn btn-primary me-2"
                               onClick={() => guardarCantidades(pedido)}
                             >
@@ -302,7 +326,7 @@ export default function AdminPedidos() {
 
                             <button
                               className="btn btn-secondary me-2"
-                              onClick={() => setPedidoEditando(null)}
+                              onClick={() => setPedidoEditado(null)}
                             >
                               Cancelar
                             </button>
@@ -310,7 +334,7 @@ export default function AdminPedidos() {
                         ) : (
                           <button
                             className="btn btn-warning me-2"
-                            onClick={() => setPedidoEditando(pedido._id)}
+                            onClick={() => setPedidoEditado(pedido._id)}
                           >
                             Modificar cantidades
                           </button>
@@ -318,7 +342,7 @@ export default function AdminPedidos() {
 
                         <button
                           className="btn btn-success"
-                          onClick={() => guardarAprobacion(pedido)}
+                          onClick={() => setPedidoAprobado(pedido._id)}
                         >
                           Aprobar pedido
                         </button>
@@ -327,7 +351,7 @@ export default function AdminPedidos() {
                   {pedido.estado === "aprobado" && (
                     <button
                       className="btn btn-primary mt-3"
-                      onClick={() => marcarEnviado(pedido._id)}
+                      onClick={() => setPedidoEnviado(pedido._id)}
                     >
                       Marcar como enviado
                     </button>
@@ -336,7 +360,7 @@ export default function AdminPedidos() {
                   {pedido.estado !== "cancelado" && (
                     <button
                       className="btn btn-danger mt-3 ms-3"
-                      onClick={() => setPedidoCancelando(pedido._id)}
+                      onClick={() => setPedidoCancelado(pedido._id)}
                     >
                       Cancelar pedido
                     </button>
@@ -349,13 +373,13 @@ export default function AdminPedidos() {
       )}
 
       {/* MODAL DE CANCELACIÓN */}
-      {pedidoCancelando && (
+      {pedidoCancelado && (
         <div className="modal show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Cancelar Pedido</h5>
-                <button className="btn-close" onClick={() => setPedidoCancelando(null)}></button>
+                <button className="btn-close" onClick={() => setPedidoCancelado(null)}></button>
               </div>
               <div className="modal-body">
                 <label>Motivo de cancelación:</label>
@@ -366,7 +390,7 @@ export default function AdminPedidos() {
                 />
               </div>
               <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setPedidoCancelando(null)}>
+                <button className="btn btn-secondary" onClick={() => setPedidoCancelado(null)}>
                   Cerrar
                 </button>
                 <button className="btn btn-danger" onClick={cancelarPedido}>
@@ -378,6 +402,64 @@ export default function AdminPedidos() {
         </div>
       )}
 
+      {/* MODAL DE APROBACIÓN */}
+        {pedidoAprobado && (
+            <div className="modal show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Motivo de aprobación del pedido</h5>
+                            <button className="btn-close" onClick={() => setApproveReason("")}></button>
+                        </div>
+                        <div className="modal-body">
+                            <label>Por favor, ingrese el motivo de la aprobación:</label>
+                            <textarea
+                                className="form-control"
+                                value={ApproveReason}
+                                onChange={(e) => setApproveReason(e.target.value)}
+                            />
+                        </div>
+                      <div className="modal-footer">
+                          <button className="btn btn-secondary" onClick={() => setPedidoAprobado(null)}>
+                            Cerrar
+                          </button>
+                          <button className="btn btn-danger" onClick={guardarAprobacion}>
+                            Aprobar Pedido
+                          </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+        {/* MODAL DE ENVÍO */}
+        {pedidoEnviado && (
+            <div className="modal show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Motivo de envío del pedido</h5>
+                            <button className="btn-close" onClick={() => setSendReason("")}></button>
+                        </div>
+                        <div className="modal-body">
+                            <label>Por favor, ingrese el motivo del envío:</label>
+                            <textarea
+                                className="form-control"
+                                value={SendReason}
+                                onChange={(e) => setSendReason(e.target.value)}
+                            />
+                        </div>
+                        <div className="modal-footer">
+                          <button className="btn btn-secondary" onClick={() => setPedidoEnviado(null)}>
+                            Cerrar
+                          </button>
+                          <button className="btn btn-danger" onClick={marcarEnviado}>
+                            Aprobar Pedido
+                          </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
     </div>
   );
 }
