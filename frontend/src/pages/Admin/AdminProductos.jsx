@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Papa from "papaparse";
 
 export default function AdminProductos() {
   const [productos, setProductos] = useState([]);
@@ -12,6 +13,8 @@ export default function AdminProductos() {
     const [mostrarInactivos, setMostrarInactivos] = useState(false);
     const [nuevoColor, setNuevoColor] = useState("");
     const [mostrarListaMarcas, setMostrarListaMarcas] = useState(false);
+    const [csvProductos, setCsvProductos] = useState([]);
+
 
   const [formData, setFormData] = useState({
     referencia: "",
@@ -213,13 +216,85 @@ const fetchMarcas = async () => {
       console.error("Error al cambiar estado", err);
     }
   };
+const handleCSV = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
+  Papa.parse(file, {
+  header: true,
+  skipEmptyLines: true,
+  delimiter: ";", // <- importante
+  complete: async (results) => {
+    const rows = results.data;
+
+    // Validación básica
+    const requeridos = ["referencia", "categoria", "codigo"];
+    for (let r of requeridos) {
+      if (!Object.prototype.hasOwnProperty.call(rows[0], r)) {
+        alert("El archivo CSV no contiene la columna obligatoria: " + r);
+        return;
+      }
+    }
+
+    // Limpieza de datos
+    const productosLimpios = rows.map((p) => ({
+      referencia: p.referencia?.trim() || "",
+      categoria: p.categoria?.trim() || "",
+      codigo: p.codigo?.trim() || "",
+      marca: p.marca?.trim() || "",
+      descripcion: p.descripcion?.trim() || "",
+      imagen: p.imagen?.trim() || "",
+      colores: p.colores
+      ? p.colores.split(/[,;\t]/).map(c => c.trim()).filter(Boolean)
+      : [],
+
+    }));
+
+      // Enviar al backend
+        setCsvProductos(productosLimpios);
+        alert("Archivo parseado correctamente. Ahora confirma la carga.");    },
+  });
+};
+
+const subirProductosMasivos = async (lista) => {
+  try {
+    const res = await fetch("http://localhost:5000/api/productos/upload-csv", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ productos: lista }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("Error en carga masiva: " + (data.msg || "Error desconocido"));
+      return;
+    }
+
+    alert("Carga masiva completada con éxito. " + data.insertados + " productos agregados.");
+    fetchProductos();
+  } catch (err) {
+    console.error("Error en carga masiva:", err);
+    alert("No se pudo cargar el archivo.");
+  }
+};
   return (
 
     <div>
       <h2 className="mb-4 text-danger">
         {editando ? "Editar Producto" : "Crear Producto"}
       </h2>
+      <button
+        className="btn btn-outline-danger mb-4"
+        data-bs-toggle="modal"
+        data-bs-target="#modalCargaMasiva"
+         >
+        Carga masiva CSV
+      </button>
+
 
       {/* FORMULARIO */}
       <form onSubmit={handleSubmit} className="mb-4">
@@ -665,7 +740,48 @@ const fetchMarcas = async () => {
             </div>
           </div>
         ))}
+        <div className="modal fade" id="modalCargaMasiva" tabIndex="-1">
+  <div className="modal-dialog">
+    <div className="modal-content">
+
+      <div className="modal-header">
+        <h5 className="modal-title">Carga Masiva de Productos (CSV)</h5>
+        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div className="modal-body">
+        <p className="text-muted">
+          El archivo CSV debe contener columnas:
+          <strong>referencia, categoria, codigo, marca, descripcion, imagen, colores</strong>
+          (colores separados por comas).
+        </p>
+
+        <input
+          type="file"
+          accept=".csv"
+          className="form-control"
+          onChange={(e) => handleCSV(e)}
+        />
+      </div>
+
+      <div className="modal-footer">
+        <button
+          className="btn btn-danger"
+          disabled={csvProductos.length === 0}
+          onClick={() => subirProductosMasivos(csvProductos)}
+        >
+          Enviar
+        </button>
+
+        <button className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
       </div>
     </div>
+
   );
 }

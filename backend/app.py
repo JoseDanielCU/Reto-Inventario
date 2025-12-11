@@ -9,7 +9,7 @@ from routes.auth_routes import login_user, register_user
 from routes.orders_routes import crear_pedido, pedidos_por_sucursal, obtener_todos_los_pedidos, aprobar_pedido, \
     cambiar_estado_pedido, actualizar_cantidades
 from routes.products_routes import crear_producto, listar_productos, actualizar_producto, eliminar_producto, \
-    listar_categorias, cambiar_estado_producto
+    listar_categorias, cambiar_estado_producto,cargar_productos_csv
 from routes.Sucursales_routes import crear_sucursal, listar_sucursales, actualizar_sucursal, eliminar_sucursal
 
 load_dotenv()
@@ -154,5 +154,10 @@ def cancelar_pedido_route(id):
 @jwt_required()
 def cambiar_estado_producto_route(id):
     return cambiar_estado_producto(id)
+@app.route("/api/productos/upload-csv", methods=["POST"])
+@jwt_required()
+def upload_csv_route():
+    return cargar_productos_csv()
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+

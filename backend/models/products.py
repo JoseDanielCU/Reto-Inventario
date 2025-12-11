@@ -48,3 +48,6 @@ class ProductModel:
             {"_id": ObjectId(id)},
             {"$set": {"activo": estado}}
         )
+    @staticmethod
+    def get_one(filtro):
+        return mongo.db[ProductModel.collection].find_one(filtro)
