@@ -273,6 +273,7 @@ export default function AdminPedidos() {
                     <thead>
                       <tr>
                         <th>Referencia</th>
+                        <th>Color</th>
                         <th>Categoría</th>
                         <th>Código</th>
                         <th>Marca</th>
@@ -284,6 +285,7 @@ export default function AdminPedidos() {
                       {pedido.productos.map((p, i) => (
                         <tr key={i}>
                           <td>{p.referencia}</td>
+                          <td>{p.colores}</td>
                           <td>{p.categoria}</td>
                           <td>{p.codigo}</td>
                           <td>{p.marca}</td>

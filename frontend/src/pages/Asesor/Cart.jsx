@@ -9,14 +9,14 @@ export default function Carrito() {
 
   const actualizarCantidad = (id, cantidad) => {
     const nuevo = carrito.map((item) =>
-      item._id === id ? { ...item, cantidad: Number(cantidad) } : item
+      item._uniqueId === id ? { ...item, cantidad: Number(cantidad) } : item
     );
     setCarrito(nuevo);
     localStorage.setItem("carrito", JSON.stringify(nuevo));
   };
 
   const eliminarDelCarrito = (id) => {
-    const nuevo = carrito.filter((item) => item._id !== id);
+    const nuevo = carrito.filter((item) => item._uniqueId !== id);
     setCarrito(nuevo);
     localStorage.setItem("carrito", JSON.stringify(nuevo));
   };
@@ -74,6 +74,7 @@ export default function Carrito() {
             <thead>
               <tr>
                 <th>Producto</th>
+                <th>Color</th>
                 <th>Marca</th>
                 <th>Categoría</th>
                 <th>Código</th>
@@ -83,8 +84,9 @@ export default function Carrito() {
             </thead>
             <tbody>
               {carrito.map((item) => (
-                <tr key={item._id}>
+                <tr key={item._uniqueId}>
                   <td>{item.referencia}</td>
+                  <td>{item.colores}</td>
                   <td>{item.marca}</td>
                   <td>{item.categoria}</td>
                   <td>{item.codigo}</td>
@@ -96,14 +98,14 @@ export default function Carrito() {
                       style={{ width: "80px" }}
                       value={item.cantidad || 1}
                       onChange={(e) =>
-                        actualizarCantidad(item._id, e.target.value)
+                        actualizarCantidad(item._uniqueId, e.target.value)
                       }
                     />
                   </td>
                   <td>
                     <button
                       className="btn btn-outline-danger btn-sm"
-                      onClick={() => eliminarDelCarrito(item._id)}
+                      onClick={() => eliminarDelCarrito(item._uniqueId)}
                     >
                       Quitar
                     </button>

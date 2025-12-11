@@ -176,6 +176,7 @@ export default function PedidosAsesor() {
                                             <thead>
                                                 <tr>
                                                     <th>Referencia</th>
+                                                    <th>Color</th>
                                                     <th>Categoría</th>
                                                     <th>Código</th>
                                                     <th>Marca</th>
@@ -188,6 +189,7 @@ export default function PedidosAsesor() {
                                                     pedido.productos.map((prod, i) => (
                                                         <tr key={i}>
                                                             <td>{prod.referencia}</td>
+                                                            <td>{prod.colores}</td>
                                                             <td>{prod.categoria}</td>
                                                             <td>{prod.codigo}</td>
                                                             <td>{prod.marca}</td>

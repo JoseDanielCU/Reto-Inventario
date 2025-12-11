@@ -8,6 +8,7 @@ const [productos, setProductos] = useState([]);
   const [categoria, setCategoria] = useState("");
   const [codigo, setCodigo] = useState("");
   const [marca, setMarca] = useState("");
+  const [coloresSeleccionados, setColoresSeleccionados] = useState({});
 
   // carrito
 
@@ -81,22 +82,63 @@ const [productos, setProductos] = useState([]);
   };
 
   const addToCart = (producto) => {
-    const cantidad = cantidades[producto._id] || 1;
+  const cantidad = cantidades[producto._id] || 1;
+  const colores = coloresSeleccionados[producto._id] || [];
 
-    setCarrito((prev) => {
-      const existente = prev.find((item) => item._id === producto._id);
+  setCarrito((prev) => {
+    let nuevo = [...prev];
+
+    // Caso sin colores → item único basado solo en _id
+    if (colores.length === 0) {
+      const uniqueId = producto._id + "_default";
+
+      const existente = nuevo.find((x) => x._uniqueId === uniqueId);
+
       if (existente) {
-        return prev.map((item) =>
-          item._id === producto._id
-            ? { ...item, cantidad: item.cantidad + cantidad }
-            : item
-        );
+        existente.cantidad += cantidad;
       } else {
-        return [...prev, { ...producto, cantidad }];
+        nuevo.push({
+          ...producto,
+          cantidad,
+          colores: [],
+          _uniqueId: uniqueId,
+        });
+      }
+
+      return nuevo;
+    }
+
+    // Caso con varios colores → cada color es un item independiente
+    colores.forEach((color) => {
+      const uniqueId = `${producto._id}_${color}`;
+
+      const existente = nuevo.find((x) => x._uniqueId === uniqueId);
+
+      if (existente) {
+        existente.cantidad += cantidad;
+      } else {
+        nuevo.push({
+          ...producto,
+          cantidad,
+          colores: [color],
+          _uniqueId: uniqueId,
+        });
       }
     });
 
-    setCantidades({ ...cantidades, [producto._id]: 1 });
+    return nuevo;
+  });
+};
+
+  const toggleColor = (id, color) => {
+    setColoresSeleccionados(prev => {
+      const actuales = prev[id] || [];
+      if (actuales.includes(color)) {
+        return { ...prev, [id]: actuales.filter(c => c !== color) };
+      } else {
+        return { ...prev, [id]: [...actuales, color] };
+      }
+    });
   };
 
   return (
@@ -176,57 +218,77 @@ const [productos, setProductos] = useState([]);
                   style={{ height: "200px", objectFit: "cover" }}
                   alt={p.referencia}
                 />
-                <div className="card-body">
+                <div className="card-body d-flex flex-column">
                   <h5 className="card-title">{p.referencia}</h5>
                   <p className="card-text">
                     Categoría: {p.categoria} <br />
                     Marca: {p.marca || "N/A"} <br />
                     Código: {p.codigo || "N/A"}
                   </p>
-                  <div className="d-flex flex-column align-items-center mb-3">
-                  <div className="d-flex align-items-center justify-content-center">
-                    <button
-                      className="btn btn-outline-danger btn-sm me-2"
-                      onClick={() =>
-                        handleCantidadChange(
-                          p._id,
-                          Math.max(1, (cantidades[p._id] || 1) - 1)
-                        )
-                      }
-                    >
-                      −
-                    </button>
-
-                    <span
-                      style={{
-                        minWidth: "40px",
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        fontSize: "1.1rem",
-                      }}
-                    >
-                      {cantidades[p._id] || 1}
-                    </span>
-
-                    <button
-                      className="btn btn-outline-danger btn-sm ms-2"
-                      onClick={() =>
-                        handleCantidadChange(p._id, (cantidades[p._id] || 1) + 1)
-                      }
-                    >
-                      +
-                    </button>
+                  {p.colores?.length > 0 && (
+                  <div className="mb-2">
+                    <strong>Colores:</strong>
+                    <div className="d-flex flex-wrap gap-2 mt-2">
+                      {p.colores.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          className={`btn btn-sm ${
+                            coloresSeleccionados[p._id]?.includes(color)
+                              ? "btn-danger"
+                              : "btn-outline-danger"
+                          }`}
+                          onClick={() => toggleColor(p._id, color)}
+                        >
+                          {color}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <button
-                  className="btn btn-danger w-100"
-                  onClick={() => addToCart(p)}
-                >
-                  Agregar al carrito
-                </button>
+                  <div className="mt-auto">
+                    <div className="d-flex flex-column align-items-center mb-3">
+                      <div className="d-flex align-items-center justify-content-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm me-2"
+                          onClick={() =>
+                            handleCantidadChange(
+                              p._id,
+                              Math.max(1, (cantidades[p._id] || 1) - 1)
+                            )
+                          }
+                        >
+                          −
+                        </button>
 
-                </div>
+                        <span
+                          style={{
+                            minWidth: "40px",
+                            textAlign: "center",
+                            fontWeight: "bold",
+                            fontSize: "1.1rem",
+                          }}
+                        >
+                          {cantidades[p._id] || 1}
+                        </span>
+
+                        <button
+                          className="btn btn-outline-danger btn-sm ms-2"
+                          onClick={() =>
+                            handleCantidadChange(p._id, (cantidades[p._id] || 1) + 1)
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <button className="btn btn-danger w-100" onClick={() => addToCart(p)}>
+                      Agregar al carrito
+                    </button>
+                    </div>
+                  </div>
               </div>
             </div>
           ))}

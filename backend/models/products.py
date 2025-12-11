@@ -14,7 +14,8 @@ class ProductModel:
             "marca": data.get("marca"),
             "descripcion": data.get("descripcion", ""),
             "imagen": data.get("imagen"),
-            "activo": data.get("activo", True)
+            "activo": data.get("activo", True),
+            "colores": data.get("colores", [])
         }
         result = mongo.db[ProductModel.collection].insert_one(producto)
         producto["_id"] = result.inserted_id

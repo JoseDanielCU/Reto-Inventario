@@ -10,6 +10,9 @@ export default function AdminProductos() {
     const [filtroMarca, setFiltroMarca] = useState("");
     const [marcas, setMarcas] = useState([]);
     const [mostrarInactivos, setMostrarInactivos] = useState(false);
+    const [nuevoColor, setNuevoColor] = useState("");
+    const [mostrarListaMarcas, setMostrarListaMarcas] = useState(false);
+
   const [formData, setFormData] = useState({
     referencia: "",
     categoria: "",
@@ -18,6 +21,7 @@ export default function AdminProductos() {
     marca: "",
     descripcion: "",
     imagen: "",
+    colores: [],
   });
 
   const [mensaje, setMensaje] = useState("");
@@ -47,17 +51,33 @@ export default function AdminProductos() {
 };
 const fetchMarcas = async () => {
   try {
-    const res = await fetch("http://localhost:5000/api/productos");
+    const token = localStorage.getItem("token"); // o donde guardes el token
+
+    const res = await fetch("http://localhost:5000/api/productos?all=true", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) throw new Error("Unauthorized");
+
     const data = await res.json();
 
-    if (!Array.isArray(data)) return;
+    const marcasUnicas = [...new Set(
+      data
+        .map((p) => p.marca)
+        .filter(Boolean)
+        .map((m) => m.trim())
+    )];
 
-    const marcasUnicas = [...new Set(data.map((p) => p.marca).filter(Boolean))];
     setMarcas(marcasUnicas);
+
   } catch (err) {
     console.error("Error al cargar marcas:", err);
   }
 };
+
 
   const fetchCategorias = async () => {
     try {
@@ -79,9 +99,20 @@ const fetchMarcas = async () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleEdit = (producto) => {
-    setFormData({ ...producto, nuevaCategoria: "" });
-    setEditando(producto._id);
-  };
+  setFormData({
+    referencia: producto.referencia || "",
+    categoria: producto.categoria || "",
+    nuevaCategoria: "",
+    codigo: producto.codigo || "",
+    marca: producto.marca || "",
+    descripcion: producto.descripcion || "",
+    imagen: producto.imagen || "",
+    colores: producto.colores || [],
+  });
+  setEditando(producto._id);
+};
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,16 +142,16 @@ const fetchMarcas = async () => {
     if (res.ok) {
       setMensaje(editando ? "Producto actualizado" : "Producto creado");
       setFormData({
-        referencia: "",
-        categoria: "",
-        nuevaCategoria: "",
-        codigo: "",
-        marca: "",
-        descripcion: "",
-        imagen: "",
-      });
+      referencia: "",
+      categoria: "",
+      nuevaCategoria: "",
+      codigo: "",
+      marca: "",
+      descripcion: "",
+      imagen: "",
+      colores: [],   // <---
+    });
       setEditando(null);
-
       fetchProductos();
       fetchCategorias();
     } else {
@@ -139,17 +170,27 @@ const fetchMarcas = async () => {
   };
     useEffect(() => {
       function handleClickOutside(e) {
-        const lista = document.getElementById("lista-categorias");
-        const input = document.getElementById("input-categoria");
+        // Categorías
+        const listaCat = document.getElementById("lista-categorias");
+        const inputCat = document.getElementById("input-categoria");
 
-        if (lista && !lista.contains(e.target) && !input.contains(e.target)) {
+        if (listaCat && !listaCat.contains(e.target) && !inputCat.contains(e.target)) {
           setMostrarLista(false);
+        }
+
+        // Marcas
+        const listaMarca = document.getElementById("lista-marcas");
+        const inputMarca = document.getElementById("input-marca");
+
+        if (listaMarca && !listaMarca.contains(e.target) && !inputMarca.contains(e.target)) {
+          setMostrarListaMarcas(false);
         }
       }
 
       document.addEventListener("click", handleClickOutside);
       return () => document.removeEventListener("click", handleClickOutside);
     }, []);
+
   const toggleActivo = async (id, estadoActual) => {
     try {
       const res = await fetch(`http://localhost:5000/api/productos/${id}/estado`, {
@@ -297,16 +338,86 @@ const fetchMarcas = async () => {
             />
           </div>
 
-          <div className="col-md-4 mb-2">
-            <input
-              type="text"
-              name="marca"
-              placeholder="Marca"
-              className="form-control"
-              value={formData.marca}
-              onChange={handleChange}
-            />
+          <div className="col-md-4 mb-2 position-relative">
+            <div className="input-group">
+              <input
+                id="input-marca"
+                type="text"
+                name="marca"
+                className="form-control"
+                placeholder="Escribe o selecciona una marca"
+                value={formData.marca}
+                autoComplete="off"
+                onFocus={() => setMostrarListaMarcas(true)}
+                onChange={(e) => {
+                  setFormData({ ...formData, marca: e.target.value });
+                  setMostrarListaMarcas(true);
+                }}
+              />
+
+              {/* BOTÓN LIMPIAR */}
+              {formData.marca && (
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setFormData({ ...formData, marca: "" })}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* LISTA DE SUGERENCIAS */}
+            {mostrarListaMarcas && marcas.length > 0 && (
+              <ul
+                id="lista-marcas"
+                className="list-group position-absolute w-100 fade show"
+                style={{
+                  zIndex: 1000,
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                  transition: "opacity 0.15s ease-in-out"
+                }}
+              >
+                {/* MARCAS FILTRADAS */}
+                {marcas
+                  .filter((m) =>
+                    m.toLowerCase().includes(formData.marca.toLowerCase())
+                  )
+                  .map((m, i) => (
+                    <li
+                      key={i}
+                      className="list-group-item list-group-item-action"
+                      onClick={() => {
+                        setFormData({ ...formData, marca: m });
+                        setMostrarListaMarcas(false);
+                      }}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {m}
+                    </li>
+                  ))}
+
+                {/* CREAR NUEVA MARCA */}
+                {marcas.filter((m) =>
+                  m.toLowerCase().includes(formData.marca.toLowerCase())
+                ).length === 0 &&
+                  formData.marca.trim() !== "" && (
+                    <li
+                      className="list-group-item list-group-item-action text-success fw-bold"
+                      onClick={() => {
+                        setFormData({ ...formData, marca: formData.marca });
+                        setMostrarListaMarcas(false);
+                      }}
+                      style={{ cursor: "pointer" }}
+                    >
+                      Crear nueva marca: "{formData.marca}"
+                    </li>
+                  )}
+              </ul>
+            )}
           </div>
+
 
           <div className="col-md-6 mb-2">
             <input
@@ -329,6 +440,59 @@ const fetchMarcas = async () => {
             />
           </div>
         </div>
+        {/* COLORES */}
+        <div className="col-12 mb-3">
+          <label className="form-label fw-bold">Colores</label>
+
+          <div className="input-group mb-2">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Escribe un color y agrégalo"
+              value={nuevoColor}
+              onChange={(e) => setNuevoColor(e.target.value)}
+            />
+            <button
+              type="button"
+              className="btn btn-outline-primary"
+              onClick={() => {
+                if (nuevoColor.trim() !== "" && !formData.colores.includes(nuevoColor.trim())) {
+                  setFormData({
+                    ...formData,
+                    colores: [...formData.colores, nuevoColor.trim()],
+                  });
+                  setNuevoColor("");
+                }
+              }}
+            >
+              Añadir
+            </button>
+          </div>
+
+          {/* Lista de colores */}
+          <div className="mt-2">
+            {formData.colores.length === 0 && (
+              <p className="text-muted">No hay colores agregados.</p>
+            )}
+
+            {formData.colores.map((c, i) => (
+              <span key={i} className="badge bg-secondary me-2">
+                {c}
+                <button
+                  type="button"
+                  className="btn-close btn-close-white ms-2"
+                  style={{ transform: "scale(0.8)" }}
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      colores: formData.colores.filter((_, idx) => idx !== i),
+                    })
+                  }
+                ></button>
+              </span>
+            ))}
+          </div>
+        </div>
 
         <button type="submit" className="btn btn-danger mt-2">
           {editando ? "Actualizar" : "Crear Producto"}
@@ -347,6 +511,7 @@ const fetchMarcas = async () => {
                 marca: "",
                 descripcion: "",
                 imagen: "",
+                colores: [],
               });
               setEditando(null);
             }}
@@ -412,20 +577,20 @@ const fetchMarcas = async () => {
               ))}
             </select>
           </div>
-<div className="col-12 col-md-2 d-flex align-items-center">
-  <div className="form-check">
-    <input
-      className="form-check-input"
-      type="checkbox"
-      id="mostrarInactivos"
-      checked={mostrarInactivos}
-      onChange={(e) => setMostrarInactivos(e.target.checked)}
-    />
-    <label className="form-check-label" htmlFor="mostrarInactivos">
-      Mostrar inactivos
-    </label>
-  </div>
-</div>
+        <div className="col-12 col-md-2 d-flex align-items-center">
+          <div className="form-check">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="mostrarInactivos"
+              checked={mostrarInactivos}
+              onChange={(e) => setMostrarInactivos(e.target.checked)}
+            />
+            <label className="form-check-label" htmlFor="mostrarInactivos">
+              Mostrar inactivos
+            </label>
+          </div>
+        </div>
 
           <div className="col-6 col-md-2">
             <button type="submit" className="btn btn-danger w-100">
@@ -438,25 +603,35 @@ const fetchMarcas = async () => {
       <h4>Productos Existentes</h4>
       <div className="row">
         {productos.map((p) => (
-          <div key={p._id} className="col-md-4 mb-3">
-            <div className="card shadow-sm">
-              {p.imagen && (
-                <img
-                  src={p.imagen || "https://placehold.co/200"}
-                  className="card-img-top"
-                  style={{ height: "200px", objectFit: "cover" }}
-                  alt={p.referencia}
-                />
-              )}
+          <div key={p._id} className="col-md-3 mb-3">
+              <div className="card h-100 d-flex flex-column shadow-sm">
+
+              <img
+                src={p.imagen || "https://placehold.co/200"}
+                className="card-img-top"
+                style={{ height: "200px", objectFit: "cover" }}
+                alt={p.referencia}
+              />
+
               <div className="card-body">
                 <h5 className="card-title">{p.referencia}</h5>
                 <p className="card-text">{p.descripcion}</p>
-                <p className="card-text">
-                    Categoría: {p.categoria} <br />
-                    Marca: {p.marca || "N/A"} <br />
-                    Código: {p.codigo || "N/A"}
-                  </p>
-                <div className="d-flex gap-2 mt-2">
+               <p className="card-text">
+                Categoría: {p.categoria} <br />
+                Marca: {p.marca || "N/A"} <br />
+                Código: {p.codigo || "N/A"}
+              </p>
+
+              {p.colores && p.colores.length > 0 && (
+                <div className="card-text">
+                  Colores:
+                  {p.colores.map((c, i) => (
+                    <span key={i} className="badge bg-secondary ms-2">{c}</span>
+                  ))}
+                </div>
+              )}
+
+                <div className="d-flex flex-wrap gap-2 mt-2 w-100">
 
                 {/* EDITAR */}
                 <button
