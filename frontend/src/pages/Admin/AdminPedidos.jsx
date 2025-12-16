@@ -14,10 +14,10 @@ export default function AdminPedidos() {
   const [pedidoAprobado, setPedidoAprobado] = useState(null);
   const [SendReason, setSendReason] = useState("");
   const [pedidoEnviado, setPedidoEnviado] = useState(null);
-
+  const API_URL = import.meta.env.VITE_API_URL;
   const fetchPedidos = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/pedidos", {
+      const res = await fetch(`${API_URL}/api/pedidos`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -52,7 +52,7 @@ export default function AdminPedidos() {
   };
 
   const guardarAprobacion = async (pedido) => {
-    const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoAprobado}/aprobar`, {
+    const res = await fetch(`${API_URL}/api/pedidos/${pedidoAprobado}/aprobar`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -75,7 +75,7 @@ export default function AdminPedidos() {
   };
 
   const marcarEnviado = async () => {
-    const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoEnviado}/enviar`, {
+    const res = await fetch(`${API_URL}/api/pedidos/${pedidoEnviado}/enviar`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -99,7 +99,7 @@ export default function AdminPedidos() {
   };
 
   const cancelarPedido = async () => {
-    const res = await fetch(`http://localhost:5000/api/pedidos/${pedidoCancelado}/cancelar`, {
+    const res = await fetch(`${API_URL}/api/pedidos/${pedidoCancelado}/cancelar`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -118,7 +118,7 @@ export default function AdminPedidos() {
     }
   };
     const guardarCantidades = async (pedido) => {
-      const res = await fetch(`http://localhost:5000/api/pedidos/${pedido._id}/actualizar-cantidades`, {
+      const res = await fetch(`${API_URL}/api/pedidos/${pedido._id}/actualizar-cantidades`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

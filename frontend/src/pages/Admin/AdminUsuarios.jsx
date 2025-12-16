@@ -7,7 +7,7 @@ export default function AdminUsuarios() {
   const [editando, setEditando] = useState(null);
   const [sucursales, setSucursales] = useState([]);
   const [csvUsuarios, setCsvUsuarios] = useState([]);
-
+  const API_URL = import.meta.env.VITE_API_URL;
   const [formData, setFormData] = useState({
   nombre: "",
       apellidos: "",
@@ -21,7 +21,7 @@ export default function AdminUsuarios() {
 
   const fetchUsuarios = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/usuarios", {
+      const res = await fetch(`${API_URL}/api/usuarios`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

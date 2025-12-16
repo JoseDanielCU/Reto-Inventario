@@ -9,6 +9,7 @@ const [productos, setProductos] = useState([]);
   const [codigo, setCodigo] = useState("");
   const [marca, setMarca] = useState("");
   const [coloresSeleccionados, setColoresSeleccionados] = useState({});
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // carrito
 
@@ -41,7 +42,7 @@ const [productos, setProductos] = useState([]);
       if (marca) params.append("marca", marca);
 
       const res = await fetch(
-        `http://localhost:5000/api/productos?${params.toString()}`,
+        `${API_URL}/api/productos?${params.toString()}`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -55,7 +56,7 @@ const [productos, setProductos] = useState([]);
 
   const fetchMarcas = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/productos", {
+      const res = await fetch(`${API_URL}/api/productos`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();

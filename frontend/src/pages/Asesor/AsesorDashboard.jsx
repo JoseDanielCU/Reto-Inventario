@@ -4,6 +4,7 @@ import AsesorNavbar from "../../components/Asesor/NavbarAsesor";
 
 export default function AsesorDashboard() {
   const [carritoCount, setCarritoCount] = useState(0);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const actualizar = () => {

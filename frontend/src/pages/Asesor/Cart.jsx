@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import NavbarAsesor from "../../components/Asesor/NavbarAsesor";
 
 export default function Carrito() {
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const [carrito, setCarrito] = useState(() => {
     const saved = localStorage.getItem("carrito");
     return saved ? JSON.parse(saved) : [];
@@ -34,7 +36,7 @@ export default function Carrito() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/pedidos", {
+      const res = await fetch(`${API_URL}/api/pedidos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -12,10 +12,11 @@ export default function AdminSucursales() {
     const [mensajeSucursal, setMensajeSucursal] = useState("");
     const [editandoSucursal, setEditandoSucursal] = useState(null);
     const [searchSucursal, setSearchSucursal] = useState("");
+    const API_URL = import.meta.env.VITE_API_URL;
 
     const fetchSucursales = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/sucursales", {
+        const res = await fetch(`${API_URL}/api/sucursales`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         const data = await res.json();
@@ -38,8 +39,8 @@ export default function AdminSucursales() {
       e.preventDefault();
       try {
         const url = editandoSucursal
-          ? `http://localhost:5000/api/sucursales/${editandoSucursal}`
-          : "http://localhost:5000/api/sucursales";
+          ? `${API_URL}/api/sucursales/${editandoSucursal}`
+          : `${API_URL}/api/sucursales`;
 
         const method = editandoSucursal ? "PUT" : "POST";
 
@@ -74,7 +75,7 @@ export default function AdminSucursales() {
     const handleSucursalDelete = async (id) => {
       if (!window.confirm("¿Eliminar esta sucursal?")) return;
       try {
-        const res = await fetch(`http://localhost:5000/api/sucursales/${id}`, {
+        const res = await fetch(`${API_URL}/api/sucursales/${id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });

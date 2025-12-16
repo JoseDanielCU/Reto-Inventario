@@ -14,6 +14,7 @@ export default function AdminProductos() {
     const [nuevoColor, setNuevoColor] = useState("");
     const [mostrarListaMarcas, setMostrarListaMarcas] = useState(false);
     const [csvProductos, setCsvProductos] = useState([]);
+    const API_URL = import.meta.env.VITE_API_URL;
 
 
   const [formData, setFormData] = useState({
@@ -40,7 +41,7 @@ export default function AdminProductos() {
     if (mostrarInactivos) params.append("activo", "false");
 
     const res = await fetch(
-      `http://localhost:5000/api/productos?${params.toString()}`,
+      `${API_URL}/api/productos?${params.toString()}`,
       {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       }
@@ -56,7 +57,7 @@ const fetchMarcas = async () => {
   try {
     const token = localStorage.getItem("token"); // o donde guardes el token
 
-    const res = await fetch("http://localhost:5000/api/productos?all=true", {
+    const res = await fetch(`${API_URL}/api/productos?all=true`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
@@ -84,7 +85,7 @@ const fetchMarcas = async () => {
 
   const fetchCategorias = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/categorias");
+      const res = await fetch(`${API_URL}/api/categorias`);
       const data = await res.json();
       setCategorias(data);
     } catch (err) {
@@ -127,8 +128,8 @@ const fetchMarcas = async () => {
     delete payload.nuevaCategoria;
 
     const url = editando
-      ? `http://localhost:5000/api/productos/${editando}`
-      : "http://localhost:5000/api/productos";
+      ? `${API_URL}/api/productos/${editando}`
+      : `${API_URL}/api/productos`;
     const method = editando ? "PUT" : "POST";
 
     const res = await fetch(url, {
@@ -165,7 +166,7 @@ const fetchMarcas = async () => {
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
 
-    await fetch(`http://localhost:5000/api/productos/${id}`, {
+    await fetch(`${API_URL}/api/productos/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
@@ -196,7 +197,7 @@ const fetchMarcas = async () => {
 
   const toggleActivo = async (id, estadoActual) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/productos/${id}/estado`, {
+      const res = await fetch(`${API_URL}/api/productos/${id}/estado`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -258,7 +259,7 @@ const handleCSV = (e) => {
 
 const subirProductosMasivos = async (lista) => {
   try {
-    const res = await fetch("http://localhost:5000/api/productos/upload-csv", {
+    const res = await fetch(`${API_URL}/api/productos/upload-csv`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

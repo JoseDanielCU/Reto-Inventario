@@ -9,12 +9,14 @@ export function RegisterForm() {
   const [sucursalId, setSucursalId] = useState("");
   const [sucursales, setSucursales] = useState([]);
   const [message, setMessage] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   // Cargar sucursales
   useEffect(() => {
     const fetchSucursales = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/sucursales");
+        const res = await fetch(`${API_URL}/api/sucursales`);
         const data = await res.json();
         if (res.ok) {
           setSucursales(Array.isArray(data) ? data : []);
@@ -34,17 +36,18 @@ export function RegisterForm() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre,
-          correo,
-          username,
-          password,
-          sucursal_id: sucursalId,
-        }),
-      });
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre,
+        correo,
+        username,
+        password,
+        sucursal_id: sucursalId,
+      }),
+    });
+
 
       const data = await res.json();
       if (res.ok) {

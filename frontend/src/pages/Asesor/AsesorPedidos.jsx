@@ -11,6 +11,7 @@ export default function PedidosAsesor() {
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const sucursalId = user?.sucursal_id;
+    const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         if (!token || !sucursalId) {
@@ -18,7 +19,7 @@ export default function PedidosAsesor() {
             return;
         }
 
-        fetch(`http://localhost:5000/api/pedidos/sucursal/${sucursalId}`, {
+        fetch(`${API_URL}/api/pedidos/sucursal/${sucursalId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

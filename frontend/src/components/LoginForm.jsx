@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axiosConfig";
 
 export function LoginForm({ onLogin }) {
@@ -7,8 +7,23 @@ export function LoginForm({ onLogin }) {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // 🔒 Redirección si ya está logueado
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (token && user?.rol) {
+      if (user.rol === "admin") {
+        navigate("/admin/usuarios", { replace: true });
+      } else if (user.rol === "asesor") {
+        navigate("/asesor/pedidos", { replace: true });
+      }
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const res = await api.post("/auth/login", { correo, password });
 
@@ -16,10 +31,13 @@ export function LoginForm({ onLogin }) {
       localStorage.setItem("user", JSON.stringify(res.data));
       if (onLogin) onLogin(res.data);
 
-      if (res.data.role === "admin") navigate("/admin");
-      else navigate("/asesor/pedidos");
+      if (res.data.rol === "admin") {
+        navigate("/admin/usuarios", { replace: true });
+      } else {
+        navigate("/asesor/pedidos", { replace: true });
+      }
     } catch (err) {
-      console.error(" Error en login:", err);
+      console.error("Error en login:", err);
       alert("Credenciales incorrectas");
     }
   };
@@ -37,33 +55,25 @@ export function LoginForm({ onLogin }) {
         </h2>
 
         <div className="mb-3">
-          <label htmlFor="correo" className="form-label visually-hidden">Correo electrónico</label>
           <input
-            id="correo"
-            name="correo"
             type="email"
             className="form-control"
             placeholder="Correo electrónico"
             value={correo}
             onChange={(e) => setCorreo(e.target.value)}
             autoComplete="email"
-            aria-label="Correo electrónico"
             required
           />
         </div>
 
         <div className="mb-3">
-          <label htmlFor="password" className="form-label visually-hidden">Contraseña</label>
           <input
-            id="password"
-            name="password"
             type="password"
             className="form-control"
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
-            aria-label="Contraseña"
             required
           />
         </div>
@@ -75,7 +85,6 @@ export function LoginForm({ onLogin }) {
         >
           Ingresar
         </button>
-
       </form>
     </div>
   );

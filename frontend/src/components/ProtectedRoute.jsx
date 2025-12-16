@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   // Si hay roles permitidos y el usuario no está autorizado, redirige
-  if (allowedRoles && !allowedRoles.includes(userData.role)) {
+  if (allowedRoles && !allowedRoles.includes(userData.rol)) {
     return <Navigate to="/login" replace />;
   }
 
