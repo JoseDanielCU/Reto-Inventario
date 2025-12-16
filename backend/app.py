@@ -9,9 +9,11 @@ from routes.auth_routes import login_user
 from routes.orders_routes import crear_pedido, pedidos_por_sucursal, obtener_todos_los_pedidos, aprobar_pedido, \
     cambiar_estado_pedido, actualizar_cantidades
 from routes.products_routes import crear_producto, listar_productos, actualizar_producto, eliminar_producto, \
-    listar_categorias, cambiar_estado_producto,cargar_productos_csv
+    listar_categorias, cambiar_estado_producto, cargar_productos_csv
 from routes.Sucursales_routes import crear_sucursal, listar_sucursales, actualizar_sucursal, eliminar_sucursal
-from routes.user_route import listar_usuarios,crear_usuario,actualizar_usuario,cambiar_estado_usuario,cargar_usuarios_csv
+from routes.user_route import listar_usuarios, crear_usuario, actualizar_usuario, cambiar_estado_usuario, \
+    cargar_usuarios_csv, eliminar_usuario
+
 load_dotenv()
 app = Flask(__name__)
 app.config.from_object(config)
@@ -120,7 +122,7 @@ def listar_categorias_route():
 def aprobar_pedido_route(id):
     data = request.get_json()
     motivo = data.get("motivo", "Sin especificar")
-    return aprobar_pedido(id,motivo)
+    return aprobar_pedido(id, motivo)
 
 
 @app.route("/api/pedidos/<id>/actualizar-cantidades", methods=["PUT"])
@@ -144,14 +146,18 @@ def cancelar_pedido_route(id):
     motivo = data.get("motivo", "Sin especificar")
     return cambiar_estado_pedido(id, "cancelado", motivo)
 
+
 @app.route("/api/productos/<id>/estado", methods=["PUT"])
 @jwt_required()
 def cambiar_estado_producto_route(id):
     return cambiar_estado_producto(id)
+
+
 @app.route("/api/productos/upload-csv", methods=["POST"])
 @jwt_required()
 def upload_csv_route():
     return cargar_productos_csv()
+
 
 # ===== USUARIOS =====
 
@@ -178,11 +184,18 @@ def actualizar_usuario_route(id):
 def cambiar_estado_usuario_route(id):
     return cambiar_estado_usuario(id)
 
+
 @app.route("/api/usuarios/upload-csv", methods=["POST"])
 @jwt_required()
 def upload_usuarios_csv_route():
     return cargar_usuarios_csv()
 
+
+@app.route("/api/usuarios/<id>", methods=["DELETE"])
+@jwt_required()
+def eliminar_usuario_route(id):
+    return eliminar_usuario(id)
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
-

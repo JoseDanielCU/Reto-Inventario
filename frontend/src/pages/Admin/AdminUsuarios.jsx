@@ -7,6 +7,10 @@ export default function AdminUsuarios() {
   const [editando, setEditando] = useState(null);
   const [sucursales, setSucursales] = useState([]);
   const [csvUsuarios, setCsvUsuarios] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroRol, setFiltroRol] = useState("");
+  const [filtroActivo, setFiltroActivo] = useState("");
+
   const API_URL = import.meta.env.VITE_API_URL;
   const [formData, setFormData] = useState({
   nombre: "",
@@ -177,6 +181,56 @@ if (data.errores?.length) {
 }
 
     };
+  const eliminarUsuario = async (id) => {
+    const confirmar = window.confirm(
+      "¿Estás seguro de eliminar este usuario?\nEsta acción no se puede deshacer."
+    );
+
+    if (!confirmar) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/usuarios/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.msg || "Error al eliminar usuario");
+        return;
+      }
+
+      alert("Usuario eliminado correctamente");
+      fetchUsuarios();
+    } catch (error) {
+      console.error("Error al eliminar usuario:", error);
+      alert("Error de conexión con el servidor");
+    }
+  };
+  const usuariosFiltrados = usuarios.filter((u) => {
+    const texto = busqueda.toLowerCase();
+
+    const coincideTexto =
+      u.nombre?.toLowerCase().includes(texto) ||
+      u.apellidos?.toLowerCase().includes(texto) ||
+      u.correo?.toLowerCase().includes(texto) ||
+      u.sucursal_nombre?.toLowerCase().includes(texto) ||
+      u.rol?.toLowerCase().includes(texto);
+
+    const coincideRol = filtroRol ? u.rol === filtroRol : true;
+
+    const coincideActivo =
+      filtroActivo === ""
+        ? true
+        : filtroActivo === "activo"
+        ? u.activo
+        : !u.activo;
+
+    return coincideTexto && coincideRol && coincideActivo;
+  });
 
   return (
     <div>
@@ -303,6 +357,61 @@ if (data.errores?.length) {
       </div>
 
       {mensaje && <div className="alert alert-info">{mensaje}</div>}
+<div className="card p-3 mb-3 shadow-sm">
+  <div className="row g-2 align-items-end">
+
+    <div className="col-md-4">
+      <label className="form-label">Buscar</label>
+      <input
+        type="text"
+        className="form-control"
+        placeholder="Nombre, correo, sucursal, rol..."
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+      />
+    </div>
+
+    <div className="col-md-3">
+      <label className="form-label">Rol</label>
+      <select
+        className="form-select"
+        value={filtroRol}
+        onChange={(e) => setFiltroRol(e.target.value)}
+      >
+        <option value="">Todos</option>
+        <option value="admin">Administrador</option>
+        <option value="user">Usuario</option>
+      </select>
+    </div>
+
+    <div className="col-md-3">
+      <label className="form-label">Estado</label>
+      <select
+        className="form-select"
+        value={filtroActivo}
+        onChange={(e) => setFiltroActivo(e.target.value)}
+      >
+        <option value="">Todos</option>
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </div>
+
+    <div className="col-md-2">
+      <button
+        className="btn btn-outline-secondary w-100"
+        onClick={() => {
+          setBusqueda("");
+          setFiltroRol("");
+          setFiltroActivo("");
+        }}
+      >
+        Limpiar
+      </button>
+    </div>
+
+  </div>
+</div>
 
       <div className="d-flex justify-content-between align-items-center mb-3">
           <h4 className="mb-0">Usuarios existentes</h4>
@@ -319,7 +428,7 @@ if (data.errores?.length) {
         </div>
 
       <div className="row">
-        {usuarios.map((u) => (
+        {usuariosFiltrados.map((u) => (
           <div key={u._id} className="col-md-3 mb-3">
             <div className="card shadow-sm">
               <div className="card-body">
@@ -335,15 +444,24 @@ if (data.errores?.length) {
                     className="btn btn-outline-primary btn-sm"
                     onClick={() => handleEdit(u)}
                   >
-                    Editar
+                    <i className="bi bi-pencil-square"></i> Editar
                   </button>
 
                   <button
                     className={`btn btn-sm ${u.activo ? "btn-success" : "btn-secondary"}`}
                     onClick={() => toggleActivo(u._id, u.activo)}
                   >
-                    {u.activo ? "Activo" : "Inactivo"}
+                   <i className={`bi ${u.activo ? "bi-check-circle" : "bi-x-circle"}`}></i>
+                  {" "}
+                  {u.activo ? "Activo" : "Inactivo"}
                   </button>
+                  <button
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() => eliminarUsuario(u._id)}
+                  >
+                    <i className="bi bi-trash"></i>Eliminar
+                  </button>
+
                 </div>
               </div>
             </div>
