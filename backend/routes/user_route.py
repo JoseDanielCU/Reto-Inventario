@@ -111,6 +111,19 @@ def cambiar_estado_usuario(id):
 
     return jsonify({"msg": "Estado actualizado"})
 
+def eliminar_usuario(id):
+    if not es_admin():
+        return jsonify({"msg": "No autorizado"}), 403
+
+    usuario = mongo.db[UserModel.collection].find_one({"_id": ObjectId(id)})
+
+    if not usuario:
+        return jsonify({"msg": "Usuario no encontrado"}), 404
+
+    mongo.db[UserModel.collection].delete_one({"_id": ObjectId(id)})
+
+    return jsonify({"msg": "Usuario eliminado correctamente"}), 200
+
 
 def cargar_usuarios_csv():
     claims = get_jwt()
