@@ -284,18 +284,10 @@ const subirProductosMasivos = async (lista) => {
   return (
 
     <div>
+      <div className="card p-3 mb-4 shadow-sm">
       <h2 className="mb-4 text-danger">
         {editando ? "Editar Producto" : "Crear Producto"}
       </h2>
-      <button
-        className="btn btn-outline-danger mb-4"
-        data-bs-toggle="modal"
-        data-bs-target="#modalCargaMasiva"
-         >
-        Carga masiva CSV
-      </button>
-
-
       {/* FORMULARIO */}
       <form onSubmit={handleSubmit} className="mb-4">
         <div className="row">
@@ -569,34 +561,54 @@ const subirProductosMasivos = async (lista) => {
           </div>
         </div>
 
-        <button type="submit" className="btn btn-danger mt-2">
-          {editando ? "Actualizar" : "Crear Producto"}
-        </button>
+        <div className="d-flex flex-wrap gap-2 mt-3">
 
-        {editando && (
-          <button
-            type="button"
-            className="btn btn-secondary ms-2 mt-2"
-            onClick={() => {
-              setFormData({
-                referencia: "",
-                categoria: "",
-                nuevaCategoria: "",
-                codigo: "",
-                marca: "",
-                descripcion: "",
-                imagen: "",
-                colores: [],
-              });
-              setEditando(null);
-            }}
-          >
-            Cancelar
+          {/* BOTÓN CREAR / ACTUALIZAR */}
+          <button type="submit" className="btn btn-danger">
+            {editando ? "Actualizar Producto" : "Crear Producto"}
           </button>
-        )}
-      </form>
 
+          {/* BOTÓN CARGA MASIVA – SOLO CUANDO NO EDITAS */}
+          {!editando && (
+            <button
+              type="button"
+              className="btn btn-outline-danger"
+              data-bs-toggle="modal"
+              data-bs-target="#modalCargaMasiva"
+            >
+              Carga masiva CSV
+            </button>
+          )}
+
+          {/* BOTÓN CANCELAR */}
+          {editando && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                setFormData({
+                  referencia: "",
+                  categoria: "",
+                  nuevaCategoria: "",
+                  codigo: "",
+                  marca: "",
+                  descripcion: "",
+                  imagen: "",
+                  colores: [],
+                });
+                setEditando(null);
+              }}
+            >
+              Cancelar
+            </button>
+          )}
+
+        </div>
+
+      </form>
+</div>
       {mensaje && <div className="alert alert-info">{mensaje}</div>}
+      <div className="card p-3 mb-4 shadow-sm">
         <h4 className="mb-3">Buscar Productos</h4>
 
         <form className="row mb-4 g-2" onSubmit={(e) => {
@@ -673,7 +685,7 @@ const subirProductosMasivos = async (lista) => {
             </button>
           </div>
         </form>
-
+    </div>
       {/* LISTADO DE PRODUCTOS */}
       <h4>Productos Existentes</h4>
       <div className="row">

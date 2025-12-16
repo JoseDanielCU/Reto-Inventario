@@ -10,9 +10,8 @@ import AdminProductos from "./pages/Admin/AdminProductos";
 import AdminSucursales from "./pages/Admin/AdminSucursales";
 import AdminPedidos from "./pages/Admin/AdminPedidos";
 import ProtectedRoute from "./components/ProtectedRoute";
-import PedidosAsesor from "./pages/Asesor/AsesorPedidos.jsx";
 import AsesorPedidos from "./pages/Asesor/AsesorPedidos.jsx";
-
+import AdminUsuarios from "./pages/Admin/AdminUsuarios.jsx";
 
 function App() {
   return (
@@ -20,8 +19,6 @@ function App() {
       <Routes>
         {/* Públicas */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-
         {/* Asesor */}
         <Route path="/asesor" element={<ProtectedRoute allowedRoles={["asesor"]}><AsesorDashboard /></ProtectedRoute>}
         >
@@ -34,6 +31,7 @@ function App() {
         {/* Admin */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>}
         >
+            <Route path="usuarios" element={<AdminUsuarios/>} />
           <Route path="productos" element={<AdminProductos />} />
           <Route path="sucursales" element={<AdminSucursales />} />
             <Route path="pedidos" element={<AdminPedidos/>}/>

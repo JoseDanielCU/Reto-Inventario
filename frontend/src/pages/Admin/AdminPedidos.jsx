@@ -165,6 +165,7 @@ export default function AdminPedidos() {
 
   return (
     <div className="container mt-4">
+      <div className="card p-3 mb-4 shadow-sm">
       <h2 className="text-danger mb-4">Pedidos Registrados</h2>
         <div className="row mb-3">
       {/* BUSCADOR */}
@@ -233,7 +234,7 @@ export default function AdminPedidos() {
   </div>
 
 </div>
-
+      </div>
 
       {mensaje && <div className="alert alert-info">{mensaje}</div>}
 
@@ -250,7 +251,7 @@ export default function AdminPedidos() {
                   data-bs-toggle="collapse"
                   data-bs-target={`#collapse${index}`}
                 >
-                  Pedido #{index + 1} - {pedido.estado.toUpperCase()}
+                  Pedido #{index + 1} - {pedido.estado.toUpperCase()} - Sucursal: {pedido.sucursal_nombre}
                 </button>
               </h2>
 

@@ -11,6 +11,7 @@ export default function AdminSucursales() {
     });
     const [mensajeSucursal, setMensajeSucursal] = useState("");
     const [editandoSucursal, setEditandoSucursal] = useState(null);
+    const [searchSucursal, setSearchSucursal] = useState("");
 
     const fetchSucursales = async () => {
       try {
@@ -88,14 +89,23 @@ export default function AdminSucursales() {
       }
     };
 
+  const sucursalesFiltradas = sucursales.filter((s) => {
+    const texto = searchSucursal.toLowerCase();
 
-
+    return (
+      (s.nombre || "").toLowerCase().includes(texto) ||
+      (s.direccion || "").toLowerCase().includes(texto) ||
+      (s.telefono || "").toLowerCase().includes(texto) ||
+      (s.correo || "").toLowerCase().includes(texto)
+    );
+  });
 
   return (
     <div>
-    <h2 className="mb-4 text-danger">
-      {editandoSucursal ? "Editar Sucursal" : "Crear Sucursal"}
-    </h2>
+      <div className="card p-3 mb-4 shadow-sm">
+      <h2 className="mb-4 text-danger">
+        {editandoSucursal ? "Editar Sucursal" : "Crear Sucursal"}
+      </h2>
 
     {/* Formulario de sucursal */}
     <form onSubmit={handleSucursalSubmit} className="mb-4">
@@ -160,15 +170,40 @@ export default function AdminSucursales() {
         </button>
       )}
     </form>
+    </div>
+      <div className="card p-3 mb-4 shadow-sm">
+      <h2 className="mb-4 text-danger">
+              Buscar Sucursales
+          </h2>
+        <div className="row g-3">
+          <div className="col-md-4">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar sucursal por nombre, dirección o contacto…"
+              value={searchSucursal}
+              onChange={(e) => setSearchSucursal(e.target.value)}
+            />
+          </div>
 
+          <div className="col-md-2">
+            <button
+              className="btn btn-secondary w-100"
+              onClick={() => setSearchSucursal("")}
+            >
+              Limpiar
+            </button>
+          </div>
+        </div>
+      </div>
     {mensajeSucursal && (
       <div className="alert alert-info">{mensajeSucursal}</div>
     )}
 
     <h4>Listado de Sucursales</h4>
     <div className="row">
-      {sucursales.length > 0 ? (
-        sucursales.map((s) => (
+      {sucursalesFiltradas.length > 0 ? (
+        sucursalesFiltradas.map((s) => (
           <div key={s._id} className="col-md-4 mb-3">
             <div className="card shadow-sm">
               <div className="card-body">
@@ -178,19 +213,22 @@ export default function AdminSucursales() {
                   {s.telefono && <>Tel: {s.telefono}</>} <br />
                   {s.correo && <>Correo: {s.correo}</>}
                 </p>
+                <div className="d-flex flex-wrap gap-2 mt-2">
                 <button
                   onClick={() => handleSucursalEdit(s)}
-                  className="btn btn-warning btn-sm me-2"
+                  className="btn btn-outline-primary btn-sm"
                 >
-                  Editar
+                  <i className="bi bi-pencil-square"></i> Editar
                 </button>
+
                 <button
                   onClick={() => handleSucursalDelete(s._id)}
-                  className="btn btn-danger btn-sm"
+                  className="btn btn-outline-danger btn-sm"
                 >
-                  Eliminar
+                  <i className="bi bi-trash"></i> Eliminar
                 </button>
-              </div>
+                  </div>
+                </div>
             </div>
           </div>
         ))

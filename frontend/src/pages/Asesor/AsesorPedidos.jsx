@@ -38,19 +38,16 @@ export default function PedidosAsesor() {
     const pedidosFiltrados = pedidos.filter((p) => {
         const texto = search.toLowerCase();
 
-        // Filtro por texto
         const coincideTexto =
-            p._id?.toLowerCase().includes(texto) ||
-            p.estado?.toLowerCase().includes(texto) ||
+            (p._id || "").toLowerCase().includes(texto) ||
+            (p.estado || "").toLowerCase().includes(texto) ||
             p.productos?.some((prod) =>
-                prod.referencia.toLowerCase().includes(texto)
+                (prod.referencia || "").toLowerCase().includes(texto)
             );
 
-        // Filtro por estado
         const coincideEstado =
             estadoFiltro === "" || p.estado === estadoFiltro;
 
-        // Fechas
         const fechaPedido = new Date(p.fecha_creacion);
         const desde = fechaInicio ? new Date(fechaInicio) : null;
         const hasta = fechaFin ? new Date(fechaFin) : null;
@@ -61,6 +58,7 @@ export default function PedidosAsesor() {
 
         return coincideTexto && coincideEstado && coincideFecha;
     });
+
 
     return (
         <div className="container mt-4">

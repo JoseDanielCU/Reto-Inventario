@@ -5,13 +5,13 @@ from config import config
 from models.mongodb import mongo, bcrypt
 from dotenv import load_dotenv
 # Rutas
-from routes.auth_routes import login_user, register_user
+from routes.auth_routes import login_user
 from routes.orders_routes import crear_pedido, pedidos_por_sucursal, obtener_todos_los_pedidos, aprobar_pedido, \
     cambiar_estado_pedido, actualizar_cantidades
 from routes.products_routes import crear_producto, listar_productos, actualizar_producto, eliminar_producto, \
     listar_categorias, cambiar_estado_producto,cargar_productos_csv
 from routes.Sucursales_routes import crear_sucursal, listar_sucursales, actualizar_sucursal, eliminar_sucursal
-
+from routes.user_route import listar_usuarios,crear_usuario,actualizar_usuario,cambiar_estado_usuario,cargar_usuarios_csv
 load_dotenv()
 app = Flask(__name__)
 app.config.from_object(config)
@@ -38,12 +38,6 @@ JWTManager(app)
 
 
 # RUTAS
-
-@app.route("/api/auth/register", methods=["POST"])
-def register():
-    data = request.get_json()
-    return register_user(data)
-
 
 @app.route("/api/auth/login", methods=["POST"])
 def login():
@@ -158,6 +152,37 @@ def cambiar_estado_producto_route(id):
 @jwt_required()
 def upload_csv_route():
     return cargar_productos_csv()
+
+# ===== USUARIOS =====
+
+@app.route("/api/usuarios", methods=["GET"])
+@jwt_required()
+def listar_usuarios_route():
+    return listar_usuarios()
+
+
+@app.route("/api/usuarios", methods=["POST"])
+@jwt_required()
+def crear_usuario_route():
+    return crear_usuario()
+
+
+@app.route("/api/usuarios/<id>", methods=["PUT"])
+@jwt_required()
+def actualizar_usuario_route(id):
+    return actualizar_usuario(id)
+
+
+@app.route("/api/usuarios/<id>/estado", methods=["PUT"])
+@jwt_required()
+def cambiar_estado_usuario_route(id):
+    return cambiar_estado_usuario(id)
+
+@app.route("/api/usuarios/upload-csv", methods=["POST"])
+@jwt_required()
+def upload_usuarios_csv_route():
+    return cargar_usuarios_csv()
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
 

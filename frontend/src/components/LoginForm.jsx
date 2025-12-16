@@ -17,7 +17,7 @@ export function LoginForm({ onLogin }) {
       if (onLogin) onLogin(res.data);
 
       if (res.data.role === "admin") navigate("/admin");
-      else navigate("/asesor");
+      else navigate("/asesor/pedidos");
     } catch (err) {
       console.error(" Error en login:", err);
       alert("Credenciales incorrectas");
@@ -76,12 +76,6 @@ export function LoginForm({ onLogin }) {
           Ingresar
         </button>
 
-        <p className="text-center mt-3">
-          ¿No tienes cuenta?{" "}
-          <Link to="/register" style={{ color: "#E60000" }}>
-            Regístrate aquí
-          </Link>
-        </p>
       </form>
     </div>
   );

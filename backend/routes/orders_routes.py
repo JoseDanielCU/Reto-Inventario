@@ -84,8 +84,6 @@ def aprobar_pedido(pedido_id, motivo=None):
     return jsonify({"msg": "Pedido aprobado correctamente"}), 200
 
 
-
-
 def actualizar_cantidades(id):
     data = request.json
     productos_modificados = data.get("productos")

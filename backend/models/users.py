@@ -1,4 +1,5 @@
 from models.mongodb import mongo, bcrypt
+from bson import ObjectId
 
 
 class UserModel:
@@ -8,8 +9,8 @@ class UserModel:
     def create_user(data):
         hashed_pw = bcrypt.generate_password_hash(data["password"]).decode("utf-8")
         user = {
-            "nombres": data["nombre"],
-            "apellidos": data["apellidos"],
+            "nombre": data["nombre"],
+            "apellidos": data.get("apellidos", ""),
             "correo": data["correo"],
             "password": hashed_pw,
             "rol": data.get("rol", "asesor"),
@@ -21,3 +22,10 @@ class UserModel:
     @staticmethod
     def find_by_email(correo):
         return mongo.db[UserModel.collection].find_one({"correo": correo})
+
+    @staticmethod
+    def update_user(id, data):
+        return mongo.db.users.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": data}
+        )

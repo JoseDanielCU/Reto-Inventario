@@ -28,12 +28,6 @@ export default function NavbarAsesor({ carritoCount = 0, user }) {
         <div className="collapse navbar-collapse" id="navbarAsesor">
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/asesor">
-                Inicio
-              </Link>
-            </li>
-
-            <li className="nav-item">
               <Link className="nav-link" to="/asesor/pedidos">
                 Mis pedidos
               </Link>
